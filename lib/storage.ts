@@ -4,7 +4,10 @@ import path from "node:path";
 // Хранение v2 (ТЗ §8.1): каждая коллекция — один JSON-файл в data/,
 // чтение целиком, перезапись целиком.
 
-export const DEFAULT_DATA_DIR = path.join(process.cwd(), "data");
+// Путь к данным можно переопределить (например, для тестов),
+// чтобы не трогать реальные тексты автора.
+export const DEFAULT_DATA_DIR =
+  process.env.IRINAOS_DATA_DIR ?? path.join(process.cwd(), "data");
 
 export function dataPath(filename: string, dir: string = DEFAULT_DATA_DIR): string {
   return path.join(dir, filename);
