@@ -298,3 +298,154 @@ a {
 .empty-note {
   color: var(--ink-soft);
 }
+
+/* Линзы */
+
+.lens-block {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.lens-buttons {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lens-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lens-button span {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.lens-button[data-active="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.lens-form {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.lens-form label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.lens-form input[type="text"],
+.lens-form select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.lens-form button,
+.pass-actions button {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.law-note {
+  color: var(--wait);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.error-note {
+  color: #8a3030;
+  font-size: 0.88rem;
+}
+
+/* Действия прохода */
+
+.pass-actions {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pass-actions .copy-button {
+  background: var(--card);
+  color: var(--accent);
+}
+
+.pass-actions form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.response-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 0.88rem;
+  background: var(--paper);
+  resize: vertical;
+}
+
+/* Было → стало */
+
+.diff-block {
+  margin: 0 0 0.9rem;
+}
+
+.diff-block summary {
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.diff-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  white-space: pre-wrap;
+}
+
+.diff-text del {
+  color: #8a3030;
+  background: #f7e3e0;
+  text-decoration: line-through;
+}
+
+.diff-text ins {
+  color: var(--ok);
+  background: #e2efe6;
+  text-decoration: none;
+}

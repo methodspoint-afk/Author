@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
 import FragmentPane from "../../../components/FragmentPane";
-import { getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
+import NewPassForm from "../../../components/NewPassForm";
+import PassActions from "../../../components/PassActions";
+import { COMPASSES } from "../../../lib/compasses";
+import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
+import { checkIterationLaw } from "../../../lib/iteration";
 import { COMPASS_TITLES, PASS_STATUS_LABELS, PASS_TYPE_LABELS } from "../../../lib/passMeta";
-import type { Pass } from "../../../lib/types";
+import { readCollection } from "../../../lib/storage";
+import type { FragmentVersion, Pass } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +28,14 @@ export default async function NotebookPage({
   const notebook = await getNotebook(notebookId);
   if (notebook === undefined) notFound();
 
-  const [versions, passes] = await Promise.all([
+  const [versions, passes, allPasses, allVersions] = await Promise.all([
     getNotebookVersions(notebook),
     getNotebookPasses(notebook),
+    getAllPasses(),
+    readCollection<FragmentVersion>("fragment-versions.json"),
   ]);
+
+  const law = checkIterationLaw(notebook, allPasses, allVersions);
 
   return (
     <>
@@ -42,6 +51,12 @@ export default async function NotebookPage({
           }))}
         />
         <aside>
+          <NewPassForm
+            notebookId={notebook.id}
+            compasses={COMPASSES.map(({ id, title, nativeGenre }) => ({ id, title, nativeGenre }))}
+            allowed={law.allowed}
+            {...(law.reason !== undefined && { reason: law.reason })}
+          />
           <h2>Проходы</h2>
           {passes.length === 0 ? (
             <p className="empty-note">Проходов пока не было.</p>
@@ -93,9 +108,12 @@ function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpen: boolean }) {
             <pre>{pass.rawResponse}</pre>
           </details>
         )}
-        {pass.status === "dispatched" && (
-          <p className="empty-note">Депеша отправлена — ответ ещё не вставлен.</p>
-        )}
+        <PassActions
+          passId={pass.id}
+          status={pass.status}
+          promptText={pass.promptText}
+          {...(pass.lastParseFailed !== undefined && { lastParseFailed: pass.lastParseFailed })}
+        />
       </div>
     </details>
   );
