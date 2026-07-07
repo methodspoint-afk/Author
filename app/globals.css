@@ -575,3 +575,29 @@ a {
   background: var(--accent-soft);
   font-weight: 600;
 }
+
+/* Оси компаса в форме линзы */
+
+.compass-axes {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+.compass-axes p {
+  margin: 0 0 0.3rem;
+  font-weight: 600;
+}
+
+.compass-axes ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: none;
+}
+
+.compass-axes li {
+  margin: 0.15rem 0;
+}

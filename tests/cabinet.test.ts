@@ -108,3 +108,28 @@ describe("промпты секретаря", () => {
     expect(prompt).toContain("срезала разгон");
   });
 });
+
+describe("реестр компасов", async () => {
+  const { COMPASSES } = await import("../lib/compasses");
+
+  it("тринадцать компасов, у каждого ровно семь осей", () => {
+    expect(COMPASSES).toHaveLength(13);
+    for (const compass of COMPASSES) {
+      expect(compass.axes, compass.id).toHaveLength(7);
+    }
+  });
+
+  it("id компасов и ключи осей уникальны", () => {
+    const ids = COMPASSES.map((compass) => compass.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const keys = COMPASSES.flatMap((compass) => compass.axes.map((axis) => axis.key));
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("каждый knowledgePath существует", async () => {
+    const { promises: fs } = await import("node:fs");
+    for (const compass of COMPASSES) {
+      await expect(fs.access(compass.knowledgePath), compass.knowledgePath).resolves.toBeUndefined();
+    }
+  });
+});

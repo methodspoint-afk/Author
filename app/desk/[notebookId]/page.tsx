@@ -82,7 +82,12 @@ export default async function NotebookPage({
         <aside>
           <NewPassForm
             notebookId={notebook.id}
-            compasses={COMPASSES.map(({ id, title, nativeGenre }) => ({ id, title, nativeGenre }))}
+            compasses={COMPASSES.map(({ id, title, nativeGenre, axes }) => ({
+              id,
+              title,
+              nativeGenre,
+              axes,
+            }))}
             allowed={law.allowed}
             {...(law.reason !== undefined && { reason: law.reason })}
           />

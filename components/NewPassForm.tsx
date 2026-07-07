@@ -9,6 +9,7 @@ interface CompassOption {
   id: string;
   title: string;
   nativeGenre: string;
+  axes: Array<{ key: string; label: string }>;
 }
 
 interface NewPassFormProps {
@@ -26,6 +27,8 @@ const LENSES = [
 
 export default function NewPassForm({ notebookId, compasses, allowed, reason }: NewPassFormProps) {
   const [lens, setLens] = useState<(typeof LENSES)[number]["type"] | null>(null);
+  const [compassId, setCompassId] = useState("");
+  const selectedCompass = compasses.find((compass) => compass.id === compassId);
   const [state, formAction, pending] = useActionState<ActionResult | undefined, FormData>(
     async (prev, formData) => {
       const result = await createPass(prev, formData);
@@ -71,7 +74,12 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
             <>
               <label>
                 Наставник
-                <select name="compassId" defaultValue="" required>
+                <select
+                  name="compassId"
+                  value={compassId}
+                  onChange={(event) => setCompassId(event.target.value)}
+                  required
+                >
                   <option value="" disabled>
                     — выберите компас —
                   </option>
@@ -82,6 +90,16 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
                   ))}
                 </select>
               </label>
+              {selectedCompass !== undefined && (
+                <div className="compass-axes">
+                  <p>Семь осей компаса (родной жанр: {selectedCompass.nativeGenre}):</p>
+                  <ul>
+                    {selectedCompass.axes.map((axis) => (
+                      <li key={axis.key}>{axis.label}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <label>
                 Жанр текста (если отличается от родного жанра компаса)
                 <input type="text" name="targetGenre" placeholder="например: иронический детектив" />
