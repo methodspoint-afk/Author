@@ -47,7 +47,8 @@
   .sw i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,.3); }
 
   /* ============ сцена ============ */
-  .stage { max-width: 1180px; margin: 0 auto; padding: 34px 28px 20px; }
+  /* сцена шире, отступы слева и справа равные — окно смещается влево */
+  .stage { max-width: 1420px; margin: 0 auto; padding: 38px 48px 22px; }
 
   .masthead { margin-bottom: 30px; }
   .masthead h1 {
@@ -74,8 +75,11 @@
   .primer span { color: var(--muted); }
   .primer:hover { border-color: var(--accent); }
 
-  .deskgrid { display: grid; grid-template-columns: 1fr 224px; gap: 26px; align-items: start; }
+  /* больше воздуха между окном и панелью; панель дышит у правого края */
+  .deskgrid { display: grid; grid-template-columns: 1fr 236px; gap: 48px; align-items: start; }
   @media (max-width: 860px) { .deskgrid { grid-template-columns: 1fr; } }
+  body.wide .deskgrid { grid-template-columns: 1fr; }
+  body.wide .rail { display: none; }
 
   /* ============ окно текста ============ */
   .workwin {
@@ -100,6 +104,12 @@
   }
   .win-head .st-name { color: var(--st); font-weight: 700; }
   .fontpick { display: inline-flex; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; }
+  .expand {
+    font-family: var(--btn); font-size: 11px; letter-spacing: .05em;
+    background: var(--card); color: var(--accent);
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 3px 9px;
+  }
+  .expand:hover { border-color: var(--accent); }
   .fontpick select {
     font-family: var(--btn); font-size: 11.5px;
     background: var(--card); color: var(--ink);
@@ -109,8 +119,9 @@
   .win-body { display: grid; grid-template-columns: 1fr 176px; }
   @media (max-width: 640px) { .win-body { grid-template-columns: 1fr; } }
 
-  .editor { padding: 24px 26px 20px; font-size: 17.5px; font-family: var(--book); }
-  .editor p { margin: 0 0 1em; max-width: 62ch; }
+  /* текст заполняет окно до полей — писать вольготно */
+  .editor { padding: 26px 34px 22px; font-size: 17.5px; font-family: var(--book); }
+  .editor p { margin: 0 0 1em; }
   mark.soul {
     background: #e2ead9; color: inherit;
     box-shadow: inset 0 -2px 0 var(--accent);
@@ -198,15 +209,14 @@
   .cab-row button:hover { background: var(--accent); color: var(--accent-ink); }
 
   /* ============ правая колонка ============ */
+  /* панель без короба: разделы зонирует воздух, а не рамки (Айв) */
   .rail {
-    background: var(--card); border: 1px solid var(--accent); border-radius: var(--radius);
-    box-shadow: 0 0 0 3px var(--card), 0 0 0 4px var(--gold);
-    padding: 16px 14px; font-family: var(--btn);
+    font-family: var(--btn);
     position: sticky; top: 58px;
   }
   .rail h3 {
     font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--muted); margin: 16px 0 8px; font-weight: 600;
+    color: var(--muted); margin: 26px 0 9px; font-weight: 600;
   }
   .rail h3:first-child { margin-top: 0; }
   .tool {
@@ -274,6 +284,7 @@
         <span class="stamp" id="stamp">ПРАВКА</span>
         <div class="win-head">
           <span>Тетрадь · Она была хорошенькая</span>
+          <button class="expand" id="expand" title="Растянуть окно на весь экран">⛶ растянуть</button>
           <label class="fontpick">шрифт:
             <select id="fontsel">
               <option value='"Times New Roman", serif' selected>Таймс — как в книге</option>
@@ -281,7 +292,6 @@
               <option value="system-ui, sans-serif">Гротеск — без засечек</option>
             </select>
           </label>
-          <span class="st-name" id="stname">Правка</span>
         </div>
         <div class="win-body">
           <div class="editor" id="editor">
@@ -375,11 +385,14 @@
       c.classList.add("on");
       var st = c.dataset.st;
       document.getElementById("win").dataset.status = st;
-      document.getElementById("stname").textContent = names[st];
       document.getElementById("stamp").textContent = names[st].toUpperCase();
     });
   });
   document.getElementById("fontsel").addEventListener("change", function (e) {
     document.getElementById("editor").style.fontFamily = e.target.value;
+  });
+  document.getElementById("expand").addEventListener("click", function () {
+    var wide = document.body.classList.toggle("wide");
+    this.textContent = wide ? "⛶ вернуть" : "⛶ растянуть";
   });
 </script>
