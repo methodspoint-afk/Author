@@ -1,0 +1,107 @@
+[
+  {
+    "id": "thread-mr66urtq",
+    "title": "Привычка говорить вслух",
+    "createdAt": "2026-07-04T09:57:23.678Z",
+    "updatedAt": "2026-07-04T10:13:38.370Z",
+    "versionIds": [
+      "e851d6d5-1108-4e2c-b254-cecefec14be2",
+      "286274a9-49e5-446e-8d87-5794be68af5f",
+      "620c3f86-f79f-45df-9db0-7aaf67d97029"
+    ],
+    "passIds": [
+      "mr5agd05-ute0uz",
+      "mr5asytz-d90fic",
+      "mr5bzz06-c5g15w",
+      "mr67fnwi-tl95yi"
+    ]
+  },
+  {
+    "id": "mr7t0yn5-q5jdk1",
+    "title": "Она была хорошенькая",
+    "createdAt": "2026-07-05T13:05:50.176Z",
+    "updatedAt": "2026-07-05T13:58:27.997Z",
+    "versionIds": [
+      "cdc173d4-17df-47fc-916d-c978d769d575"
+    ],
+    "passIds": [
+      "mr7t0yn4-v3zh88",
+      "mr7t955r-0wo58d",
+      "mr7tahhl-a1arwy",
+      "mr7tbpjc-eyk6nv",
+      "mr7tfogc-6wg1zd",
+      "mr7uwn8d-xu68de"
+    ]
+  },
+  {
+    "id": "nb-mr68pr00-ilfk7d",
+    "title": "От разбора: А ведь всему виной эта моя привычка говорить вслух не подума",
+    "createdAt": "2026-07-04T15:12:10.577Z",
+    "updatedAt": "2026-07-04T15:12:10.577Z",
+    "versionIds": [],
+    "passIds": [
+      "mr68pr00-ilfk7d"
+    ],
+    "committedPath": "learning/research/RESEARCH-2026-07-04-mr68pr00-ilfk7d.md"
+  },
+  {
+    "id": "nb-mr568mr1-55bfo6",
+    "title": "Восприятие текста читателем: читаемость, удержание внимания, дочитываемость",
+    "createdAt": "2026-07-03T17:54:41.272Z",
+    "updatedAt": "2026-07-03T17:54:41.272Z",
+    "versionIds": [],
+    "passIds": [
+      "mr568mr1-55bfo6"
+    ],
+    "committedPath": "learning/research/RESEARCH-2026-07-03-mr568mr1-55bfo6.md"
+  },
+  {
+    "id": "nb-mr5685zm-ohmh7w",
+    "title": "Ремесло: свежие разборы, лекции, эссе о писательском мастерстве",
+    "createdAt": "2026-07-06T21:37:47.701Z",
+    "updatedAt": "2026-07-06T21:37:47.701Z",
+    "versionIds": [],
+    "passIds": [
+      "mr5685zm-ohmh7w"
+    ]
+  },
+  {
+    "id": "nb-mr562s8d-h9jcou",
+    "title": "Она была хорошенькая, прямо хоть на открытку с ангелочками: ",
+    "createdAt": "2026-07-03T16:50:36.741Z",
+    "updatedAt": "2026-07-03T16:50:36.741Z",
+    "versionIds": [
+      "4fa0a212-7575-43f7-9039-bc889b433106"
+    ],
+    "passIds": [
+      "mr562s8d-h9jcou"
+    ],
+    "committedPath": "learning/corpus/PASS-dryout-2026-07-03-mr562s8d-h9jcou.md"
+  },
+  {
+    "id": "nb-mr562avk-aoofuf",
+    "title": "Она была хорошенькая, прямо хоть на открытку с ангелочками: ",
+    "createdAt": "2026-07-03T16:51:04.936Z",
+    "updatedAt": "2026-07-03T16:51:04.936Z",
+    "versionIds": [
+      "9c792edf-739e-4be0-809c-e808064b1018"
+    ],
+    "passIds": [
+      "mr562avk-aoofuf"
+    ],
+    "committedPath": "learning/corpus/PASS-dryout-2026-07-03-mr562avk-aoofuf.md"
+  },
+  {
+    "id": "nb-mr55p7zz-b4k3gz",
+    "title": "Она была хорошенькая, прямо хоть на открытку с ангелочками: ",
+    "createdAt": "2026-07-03T16:42:35.681Z",
+    "updatedAt": "2026-07-03T16:42:35.681Z",
+    "versionIds": [
+      "d45bfd2a-2a33-4ed2-aa64-e77f77d2662f"
+    ],
+    "passIds": [
+      "mr55p7zz-b4k3gz"
+    ],
+    "committedPath": "learning/corpus/PASS-chekhov-2026-07-03-mr55p7zz-b4k3gz.md"
+  }
+]

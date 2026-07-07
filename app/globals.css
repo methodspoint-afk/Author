@@ -1,0 +1,613 @@
+/* Тон интерфейса (ТЗ §5.5): тихо, точно, текст — герой. */
+
+:root {
+  --ink: #1c1a17;
+  --ink-soft: #6b655d;
+  --paper: #faf8f4;
+  --card: #ffffff;
+  --line: #e4ded4;
+  --accent: #7a5c3e;
+  --accent-soft: #f1e9dd;
+  --ok: #3d6b4f;
+  --wait: #8a6d2f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  padding: 0.9rem 2rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+
+.brand {
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.nav a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 2px;
+}
+
+.nav-soon {
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.page {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1 {
+  font-size: 1.45rem;
+  font-weight: 650;
+  margin: 0 0 1.25rem;
+}
+
+h2 {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0 0 0.75rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Стол: список тетрадей */
+
+.notebook-list {
+  display: grid;
+  gap: 0.9rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.notebook-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.notebook-card a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.notebook-card a:hover {
+  color: var(--accent);
+}
+
+.notebook-meta {
+  margin-top: 0.35rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tag-wait {
+  color: var(--wait);
+}
+
+.tag-committed {
+  color: var(--ok);
+}
+
+/* Тетрадь: окно текста + лента проходов */
+
+.notebook-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24rem;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .notebook-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fragment-pane {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+}
+
+.version-chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+
+.version-chip {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 999px;
+  padding: 0.15rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.version-chip[data-active="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.version-note {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: 0 0 0.75rem;
+}
+
+.fragment-text {
+  width: 100%;
+  min-height: 22rem;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: transparent;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.commit-bar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.commit-bar input[type="text"] {
+  flex: 1;
+  min-width: 14rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  background: var(--paper);
+}
+
+.commit-bar button {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.commit-bar button:hover {
+  opacity: 0.92;
+}
+
+.pane-hint {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: 0.75rem 0 0;
+}
+
+/* Лента проходов */
+
+.pass-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.pass-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+}
+
+.pass-card summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.pass-status {
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.pass-status[data-status="dispatched"] {
+  color: var(--wait);
+}
+
+.pass-body {
+  margin-top: 0.6rem;
+  font-size: 0.92rem;
+}
+
+.pass-body details {
+  margin: 0.4rem 0;
+}
+
+.pass-body summary {
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.pass-body pre {
+  white-space: pre-wrap;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  max-height: 18rem;
+  overflow: auto;
+}
+
+.pass-result dt {
+  font-weight: 600;
+  margin-top: 0.55rem;
+}
+
+.pass-result dd {
+  margin: 0.15rem 0 0;
+  color: var(--ink);
+}
+
+.empty-note {
+  color: var(--ink-soft);
+}
+
+/* Линзы */
+
+.lens-block {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.lens-buttons {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lens-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lens-button span {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.lens-button[data-active="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.lens-form {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.lens-form label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.lens-form input[type="text"],
+.lens-form select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.lens-form button,
+.pass-actions button {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.law-note {
+  color: var(--wait);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.error-note {
+  color: #8a3030;
+  font-size: 0.88rem;
+}
+
+/* Действия прохода */
+
+.pass-actions {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pass-actions .copy-button {
+  background: var(--card);
+  color: var(--accent);
+}
+
+.pass-actions form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.response-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 0.88rem;
+  background: var(--paper);
+  resize: vertical;
+}
+
+/* Было → стало */
+
+.diff-block {
+  margin: 0 0 0.9rem;
+}
+
+.diff-block summary {
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.diff-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  white-space: pre-wrap;
+}
+
+.diff-text del {
+  color: #8a3030;
+  background: #f7e3e0;
+  text-decoration: line-through;
+}
+
+.diff-text ins {
+  color: var(--ok);
+  background: #e2efe6;
+  text-decoration: none;
+}
+
+/* Кабинет */
+
+.study-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1rem;
+}
+
+.study-card {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.study-card:hover {
+  border-color: var(--accent);
+}
+
+.study-card p {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin: 0.4rem 0 0;
+}
+
+.notebook-toolbar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: -0.5rem 0 1.25rem;
+}
+
+.toolbar-button {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.toolbar-button:hover {
+  border-color: var(--accent);
+}
+
+.inquiry-button {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.inquiries-list {
+  max-width: 52rem;
+  margin-bottom: 1.5rem;
+}
+
+.inquiry-source {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0 0 0.3rem;
+}
+
+.inquiry-form {
+  margin-top: 0;
+}
+
+/* Портрет голоса */
+
+.voice-core pre,
+.delta-block pre {
+  white-space: pre-wrap;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.voice-core,
+.delta-block {
+  margin-bottom: 0.8rem;
+}
+
+.voice-core summary,
+.delta-block summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.delta-table-wrap {
+  overflow-x: auto;
+  margin-top: 0.6rem;
+}
+
+.delta-table {
+  border-collapse: collapse;
+  background: var(--card);
+  font-size: 0.88rem;
+  min-width: 100%;
+}
+
+.delta-table th,
+.delta-table td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.delta-table th {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+/* Оси компаса в форме линзы */
+
+.compass-axes {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+.compass-axes p {
+  margin: 0 0 0.3rem;
+  font-weight: 600;
+}
+
+.compass-axes ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: none;
+}
+
+.compass-axes li {
+  margin: 0.15rem 0;
+}
+
+/* Тихая строка секретаря (ТЗ §5.4): строка, не модал */
+
+.secretary-note {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.8rem;
+  margin: -0.5rem 0 1.25rem;
+}
