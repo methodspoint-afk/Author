@@ -601,3 +601,13 @@ a {
 .compass-axes li {
   margin: 0.15rem 0;
 }
+
+/* Тихая строка секретаря (ТЗ §5.4): строка, не модал */
+
+.secretary-note {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.8rem;
+  margin: -0.5rem 0 1.25rem;
+}

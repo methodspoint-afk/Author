@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { getAllPasses, getNotebooks } from "../../lib/data";
+import { auditReminder, readLastAuditDate } from "../../lib/rituals";
+import { readCollection } from "../../lib/storage";
+import type { FragmentVersion } from "../../lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +13,13 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
 });
 
 export default async function DeskPage() {
-  const [notebooks, passes] = await Promise.all([getNotebooks(), getAllPasses()]);
+  const [notebooks, passes, versions, lastAuditDate] = await Promise.all([
+    getNotebooks(),
+    getAllPasses(),
+    readCollection<FragmentVersion>("fragment-versions.json"),
+    readLastAuditDate(),
+  ]);
+  const reminder = auditReminder(versions, lastAuditDate);
 
   const passById = new Map(passes.map((pass) => [pass.id, pass]));
   // Тетради, состоящие из одних изысканий, живут в Кабинете, а не на Столе.
@@ -33,6 +42,13 @@ export default async function DeskPage() {
   return (
     <>
       <h1>Стол</h1>
+      {reminder.due && (
+        <p className="secretary-note">
+          Секретарь: с последнего аудита накопилось {reminder.count}{" "}
+          {plural(reminder.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}{" "}
+          — пора сверить <Link href="/study/voice">портрет голоса</Link>.
+        </p>
+      )}
       {active.length === 0 ? (
         <p className="empty-note">На столе пусто. Все тетради — на полке.</p>
       ) : (
