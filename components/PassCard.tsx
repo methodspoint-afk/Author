@@ -43,7 +43,7 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
         </details>
         {pass.parsedResult !== undefined && (
           <details open={pass.status === "completed"}>
-            <summary>{pass.type === "inquiry" ? "Справка" : "Диагноз"}</summary>
+            <summary>{pass.type === "inquiry" ? "Справка секретаря" : "Диагноз наставника"}</summary>
             <ParsedResult result={pass.parsedResult} />
           </details>
         )}
@@ -72,19 +72,33 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
   );
 }
 
+// Как показывать секции ответа (ТЗ v1 §7): «беречь» — душа текста (эмеральд),
+// «менять» — направление правки, остальное — обычным блоком.
+// Неизвестные ключи (старые проходы) отрисовываются как есть.
+const SECTION_LABELS: Record<string, string> = {
+  диагноз: "Диагноз",
+  беречь: "Что беречь — душа текста",
+  менять: "Что менять",
+  "точка роста": "Точка роста",
+};
+
 function ParsedResult({ result }: { result: Record<string, string> | Record<string, string>[] }) {
   const blocks = Array.isArray(result) ? result : [result];
   return (
     <>
       {blocks.map((block, blockIndex) => (
-        <dl key={blockIndex} className="pass-result">
-          {Object.entries(block).map(([key, value]) => (
-            <div key={key}>
-              <dt>{key}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <div key={blockIndex} className="pass-result">
+          {Object.entries(block).map(([key, value]) => {
+            const label = SECTION_LABELS[key] ?? key;
+            const cls = key === "беречь" ? "section soul" : key === "менять" ? "section change" : "section";
+            return (
+              <div key={key} className={cls}>
+                <p className="section-label">{label}</p>
+                <p className="section-text">{value}</p>
+              </div>
+            );
+          })}
+        </div>
       ))}
     </>
   );

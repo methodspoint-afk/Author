@@ -985,3 +985,118 @@ a {
 .bottombar .letter {
   color: var(--accent);
 }
+
+/* ============ Депеша-цикл (ТЗ «Тетрадь» v1 §7) ============ */
+
+.depesha-button.primary {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--card);
+  border-radius: 2px;
+  padding: 0.55rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  justify-self: stretch;
+  width: 100%;
+}
+
+.depesha-button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 85%, #000);
+}
+
+.depesha-button.primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.depesha-instruction {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.88rem;
+}
+
+.depesha-instruction b {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.depesha-instruction ol {
+  margin: 0.4rem 0 0.4rem 0;
+  padding-left: 1.2rem;
+}
+
+.depesha-instruction li {
+  margin: 0.2rem 0;
+}
+
+.depesha-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* Разбор диагноза: секции беречь / менять / прочее */
+
+.pass-result {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0.5rem 0;
+}
+
+.section-label {
+  margin: 0 0 0.2rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.section-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* «Что беречь» — душа текста: эмеральдовый акцент, как подсветка в окне */
+.section.soul {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  padding: 0.6rem 0.8rem;
+}
+
+.section.soul .section-label {
+  color: var(--accent);
+}
+
+/* «Что менять» — направление правки */
+.section.change {
+  border-left: 3px solid var(--gold);
+  padding: 0.4rem 0 0.4rem 0.8rem;
+}
+
+.section.change .section-label {
+  color: var(--gold);
+}
+
+/* Заголовки групп правой панели (ТЗ §6а) */
+.rail-group {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 1.4rem 0 0.6rem;
+}
+
+.rail-group:first-child {
+  margin-top: 0;
+}

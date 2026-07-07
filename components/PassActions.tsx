@@ -44,22 +44,30 @@ export default function PassActions({
 
   return (
     <div className="pass-actions">
-      <button type="button" className="copy-button" onClick={copyPrompt}>
-        {copied ? "Депеша скопирована" : status === "draft" ? "Передать депешу" : "Скопировать ещё раз"}
+      <button type="button" className="depesha-button primary" onClick={copyPrompt}>
+        {copied ? "✓ Промпт скопирован" : status === "draft" ? "Скопировать промпт" : "Скопировать промпт ещё раз"}
       </button>
-      <p className="pane-hint">
-        Вставьте депешу в claude.ai, а полученный ответ — сюда.
-      </p>
+      {copied && (
+        <div className="depesha-instruction">
+          <b>Что дальше:</b>
+          <ol>
+            <li>Откройте ChatGPT или Claude в соседней вкладке.</li>
+            <li>Вставьте промпт (уже в буфере) и отправьте.</li>
+            <li>Скопируйте ответ наставника и вставьте его сюда, ниже.</li>
+          </ol>
+          <p className="depesha-note">Ваш текст остаётся у вас — промпт вы отправляете сами.</p>
+        </div>
+      )}
       <form action={formAction}>
         <input type="hidden" name="passId" value={passId} />
         <textarea
           name="rawResponse"
           className="response-input"
-          placeholder="Ответ из claude.ai…"
+          placeholder="Вставьте сюда ответ наставника…"
           rows={5}
         />
-        <button type="submit" disabled={pending}>
-          {pending ? "Разбираю…" : "Вставить ответ"}
+        <button type="submit" className="depesha-button primary" disabled={pending}>
+          {pending ? "Разбираю ответ…" : "Вставить ответ наставника"}
         </button>
       </form>
       {state?.error !== undefined && <p className="error-note">{state.error}</p>}
