@@ -35,19 +35,19 @@ body {
   line-height: 1.55;
 }
 
+/* Тёмная чернильная панель сверху (ТЗ v1 §6 п. 0) — как на дизайн-пробе */
 .topbar {
   display: flex;
   align-items: baseline;
   gap: 2rem;
   padding: 0.9rem 2rem;
-  border-bottom: 1px solid var(--line);
-  background: var(--card);
+  background: #221c10;
 }
 
 .brand {
   font-weight: 650;
   letter-spacing: 0.02em;
-  color: var(--ink);
+  color: #ece5d2;
   text-decoration: none;
 }
 
@@ -57,10 +57,19 @@ body {
 }
 
 .nav a {
-  color: var(--ink);
+  color: #d8cfb8;
   text-decoration: none;
-  border-bottom: 2px solid var(--accent);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--gold);
   padding-bottom: 2px;
+}
+
+.nav a:hover {
+  color: #ffffff;
+  border-bottom-color: var(--accent);
 }
 
 .nav-soon {
@@ -698,16 +707,53 @@ a {
 /* Окно текста: рамка-статус */
 
 .workwin {
+  position: relative;
   background: var(--card);
-  border: 2px solid var(--st-draft);
+  border: 2px solid var(--st, var(--st-draft));
   border-radius: 2px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--st-draft) 14%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--st, var(--st-draft)) 14%, transparent);
   margin-bottom: 2.2rem;
 }
 
+.workwin[data-status="draft"] { --st: var(--st-draft); }
+.workwin[data-status="mentor"] { --st: var(--st-mentor); }
+.workwin[data-status="edit"] { --st: var(--st-edit); }
+.workwin[data-status="audit"] { --st: var(--st-audit); }
+.workwin[data-status="done"] { --st: var(--st-done); }
+
 .workwin[data-status="empty"] {
-  border-color: var(--line);
+  --st: var(--line);
   box-shadow: none;
+}
+
+.win-head .st-name {
+  color: var(--st, var(--st-draft));
+  font-weight: 700;
+}
+
+/* Штамп статуса в углу окна (ТЗ v1 §4) */
+.stamp {
+  position: absolute;
+  top: 0.9rem;
+  right: 1.1rem;
+  transform: rotate(-7deg);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--st, var(--st-draft));
+  border: 2px solid var(--st, var(--st-draft));
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+/* Внутри рамки-статуса окно текста без собственной рамки */
+.workwin .fragment-pane {
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
 .win-head {

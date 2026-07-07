@@ -5,6 +5,7 @@ import PassCard from "../../../components/PassCard";
 import { COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
+import { notebookStatus } from "../../../lib/notebookStatus";
 import { readCollection } from "../../../lib/storage";
 import type { FragmentVersion } from "../../../lib/types";
 import { commitToCorpus, createDigest, reopenNotebook, shelveNotebook } from "../actions";
@@ -28,6 +29,7 @@ export default async function NotebookPage({
   ]);
 
   const law = checkIterationLaw(notebook, allPasses, allVersions);
+  const status = notebookStatus(notebook, allPasses);
   const completedLensCount = passes.filter(
     (pass) => isLensPass(pass.type) && pass.status === "completed",
   ).length;
@@ -70,15 +72,22 @@ export default async function NotebookPage({
         )}
       </div>
       <div className="notebook-page">
-        <FragmentPane
-          key={versions.length}
-          notebookId={notebook.id}
-          versions={versions.map((version) => ({
-            id: version.id,
-            text: version.text,
-            ...(version.note !== undefined && { note: version.note }),
-          }))}
-        />
+        <div className="workwin" data-status={status.st}>
+          <span className="stamp">{status.stamp}</span>
+          <div className="win-head">
+            <span>Тетрадь · {notebook.title}</span>
+            <span className="st-name">{status.label}</span>
+          </div>
+          <FragmentPane
+            key={versions.length}
+            notebookId={notebook.id}
+            versions={versions.map((version) => ({
+              id: version.id,
+              text: version.text,
+              ...(version.note !== undefined && { note: version.note }),
+            }))}
+          />
+        </div>
         <aside>
           <NewPassForm
             notebookId={notebook.id}

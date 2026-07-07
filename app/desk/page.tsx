@@ -1,6 +1,7 @@
 import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import { getAllPasses, getNotebooks } from "../../lib/data";
+import { notebookStatus } from "../../lib/notebookStatus";
 import { auditReminder, readLastAuditDate } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
 import type { FragmentVersion, Notebook, Pass } from "../../lib/types";
@@ -12,21 +13,6 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
   month: "long",
   timeZone: "UTC",
 });
-
-// Статус тетради для рамки и карточек (ТЗ «Тетрадь» v1 §4).
-// Полная машина статусов придёт с маршрутом Прописей (шаг 4);
-// здесь — честная проекция текущих данных на пять состояний.
-function notebookStatus(notebook: Notebook, passes: Pass[]): { st: string; label: string } {
-  if (notebook.shelvedAt !== undefined) return { st: "done", label: "завершено" };
-  const own = passes.filter((pass) => pass.notebookId === notebook.id);
-  if (own.some((pass) => pass.status === "dispatched")) {
-    return { st: "mentor", label: "у наставника" };
-  }
-  if (own.some((pass) => pass.status === "completed")) {
-    return { st: "edit", label: "правка" };
-  }
-  return { st: "draft", label: "черновик" };
-}
 
 export default async function DeskPage() {
   const [notebooks, passes, versions, lastAuditDate] = await Promise.all([
