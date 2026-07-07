@@ -1,0 +1,385 @@
+<title>Стол — проба стиля</title>
+<style>
+  /* ============ сведённый стиль: проба № 4 ============ */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    /* фон — между «Гравюрами» (#fbf9f3) и «Архивом» (#ece1c8), контраст поднят */
+    --bg: #f1e8d2;
+    --surface: #faf5e8;
+    --card: #f6efdd;
+    --ink: #2b2416;
+    --muted: #7c6f52;
+    --line: #cfc09a;
+    --accent: #0e6f68;
+    --accent-ink: #faf5e8;
+    --gold: #b98a2e;
+    --serif: Georgia, "Times New Roman", serif;
+    --book: "Times New Roman", Georgia, serif;
+    --btn: "Courier New", monospace;
+    --radius: 2px;
+    /* статусы: серый · жёлтый · синий · коричневый · зелёный — не спутать издалека */
+    --st-draft: #8f8776;
+    --st-mentor: #d9a406;
+    --st-edit: #2e5fbf;
+    --st-audit: #7a4a1f;
+    --st-done: #2e7d44;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.55;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  /* ============ верхняя панель: дизайн-паспорт ============ */
+  .chrome {
+    position: sticky; top: 0; z-index: 50;
+    background: #221c10; color: #ece5d2;
+    padding: 10px 20px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+    font-family: var(--btn); font-size: 12.5px;
+  }
+  .chrome b { letter-spacing: .08em; }
+  .chrome .hint { color: #a99e83; }
+  .sw { display: inline-flex; gap: 5px; align-items: center; }
+  .sw i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,.3); }
+
+  /* ============ сцена ============ */
+  .stage { max-width: 1180px; margin: 0 auto; padding: 34px 28px 20px; }
+
+  .masthead { margin-bottom: 30px; }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-size: clamp(34px, 5vw, 50px);
+    margin: 0 0 10px; letter-spacing: -.01em; text-wrap: balance;
+  }
+  .masthead h1::after { content: " ❦"; color: var(--gold); font-size: .5em; vertical-align: middle; }
+  .masthead .motto { max-width: 62ch; margin: 0 0 18px; color: var(--muted); font-size: 16px; }
+
+  /* кнопки: единое начертание из «Архива» — курьер, разрядка, заливка отлична от фона */
+  button { cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .primers { display: flex; flex-wrap: wrap; gap: 10px; }
+  .primer {
+    font-family: var(--btn); font-size: 12.5px; letter-spacing: .03em;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--surface); color: var(--ink);
+    padding: 9px 14px; text-align: left;
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .primer b { display: block; font-size: 13.5px; margin-bottom: 2px; color: var(--accent); letter-spacing: .06em; }
+  .primer span { color: var(--muted); }
+  .primer:hover { border-color: var(--accent); }
+
+  .deskgrid { display: grid; grid-template-columns: 1fr 224px; gap: 26px; align-items: start; }
+  @media (max-width: 860px) { .deskgrid { grid-template-columns: 1fr; } }
+
+  /* ============ окно текста ============ */
+  .workwin {
+    position: relative;
+    background: var(--surface);
+    border: 2px solid var(--st, var(--st-draft));
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--st, var(--st-draft)) 16%, transparent);
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .workwin[data-status="draft"]  { --st: var(--st-draft); }
+  .workwin[data-status="mentor"] { --st: var(--st-mentor); }
+  .workwin[data-status="edit"]   { --st: var(--st-edit); }
+  .workwin[data-status="audit"]  { --st: var(--st-audit); }
+  .workwin[data-status="done"]   { --st: var(--st-done); }
+
+  .win-head {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px;
+    padding: 11px 20px; border-bottom: 1px solid var(--line);
+    font-family: var(--btn); font-size: 11.5px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .09em;
+  }
+  .win-head .st-name { color: var(--st); font-weight: 700; }
+  .fontpick { display: inline-flex; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; }
+  .fontpick select {
+    font-family: var(--btn); font-size: 11.5px;
+    background: var(--card); color: var(--ink);
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 3px 6px;
+  }
+
+  .win-body { display: grid; grid-template-columns: 1fr 176px; }
+  @media (max-width: 640px) { .win-body { grid-template-columns: 1fr; } }
+
+  .editor { padding: 24px 26px 20px; font-size: 17.5px; font-family: var(--book); }
+  .editor p { margin: 0 0 1em; max-width: 62ch; }
+  mark.soul {
+    background: #e2ead9; color: inherit;
+    box-shadow: inset 0 -2px 0 var(--accent);
+    padding: 0 2px;
+  }
+  .invite { color: var(--muted); font-style: italic; }
+
+  .margins { border-left: 1px dashed var(--line); padding: 22px 16px; font-size: 13px; }
+  .margins .m-title {
+    font-family: var(--btn); font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin-bottom: 10px;
+  }
+  .m-note {
+    font-family: var(--serif); font-style: italic;
+    color: var(--accent); margin-bottom: 14px; transform: rotate(-1.2deg);
+  }
+  .m-note small { display: block; font-style: normal; font-family: var(--btn); color: var(--muted); margin-top: 4px; font-size: 10.5px; }
+
+  /* статусы: включаются сами по ходу работы; здесь — кликабельная демонстрация */
+  .statusbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 12px 20px; border-top: 1px solid var(--line);
+    font-family: var(--btn); font-size: 12px;
+  }
+  .statusbar .lbl { color: var(--muted); margin-right: 4px; }
+  .chip {
+    font: inherit; letter-spacing: .04em;
+    border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--ink); padding: 4px 12px;
+  }
+  .chip[data-st="draft"].on  { border-color: var(--st-draft);  background: var(--st-draft);  color: #fff; }
+  .chip[data-st="mentor"].on { border-color: var(--st-mentor); background: var(--st-mentor); color: #2b2416; }
+  .chip[data-st="edit"].on   { border-color: var(--st-edit);   background: var(--st-edit);   color: #fff; }
+  .chip[data-st="audit"].on  { border-color: var(--st-audit);  background: var(--st-audit);  color: #fff; }
+  .chip[data-st="done"].on   { border-color: var(--st-done);   background: var(--st-done);   color: #fff; }
+  .auto-note { width: 100%; color: var(--muted); font-size: 11px; }
+
+  .stamp {
+    position: absolute; top: 14px; right: 18px;
+    transform: rotate(-7deg);
+    font-family: var(--btn); font-size: 12.5px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--st); border: 2px solid var(--st);
+    padding: 3px 10px; border-radius: 2px; opacity: .85;
+    pointer-events: none;
+  }
+
+  /* ============ лента и кабинет ============ */
+  .strip { margin-top: 30px; }
+  .strip h2, .cab h2 {
+    font-family: var(--btn); font-size: 11.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 12px;
+  }
+  .cards { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+  .tcard {
+    min-width: 190px; flex: 0 0 auto;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    border-bottom-style: dashed;
+    padding: 13px 15px; cursor: pointer;
+  }
+  .tcard:hover { border-color: var(--accent); }
+  .tcard b { display: block; font-family: var(--serif); font-size: 15px; margin-bottom: 5px; }
+  .tcard span { font-family: var(--btn); font-size: 11px; color: var(--muted); display: block; }
+  .more-link {
+    align-self: center; white-space: nowrap; font-family: var(--btn); font-size: 12px;
+    color: var(--accent); background: none; border: none; text-decoration: underline;
+  }
+
+  /* архитектура «главная кнопка + подчинённые» */
+  .cab { margin-top: 28px; }
+  .cab-main {
+    display: block; width: 100%; text-align: center;
+    font-family: var(--btn); font-size: 15px; letter-spacing: .14em; text-transform: uppercase;
+    background: var(--accent); color: var(--accent-ink);
+    border: none; border-radius: var(--radius); padding: 15px;
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 60%, #000);
+  }
+  .cab-main:hover { background: color-mix(in srgb, var(--accent) 85%, #000); }
+  .cab-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .cab-row button {
+    flex: 1 1 auto; font-family: var(--btn); font-size: 12px; letter-spacing: .05em;
+    background: var(--surface); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: var(--radius); padding: 8px 10px;
+  }
+  .cab-row button:hover { background: var(--accent); color: var(--accent-ink); }
+
+  /* ============ правая колонка ============ */
+  .rail {
+    background: var(--card); border: 1px solid var(--accent); border-radius: var(--radius);
+    box-shadow: 0 0 0 3px var(--card), 0 0 0 4px var(--gold);
+    padding: 16px 14px; font-family: var(--btn);
+    position: sticky; top: 58px;
+  }
+  .rail h3 {
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 16px 0 8px; font-weight: 600;
+  }
+  .rail h3:first-child { margin-top: 0; }
+  .tool {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    font: inherit; font-size: 12.5px; letter-spacing: .02em; text-align: left;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 8px 10px; margin-bottom: 6px;
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .tool:hover { border-color: var(--accent); }
+  .tool .glyph { color: var(--accent); font-size: 14px; width: 16px; text-align: center; }
+  .tool.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .tool.primary .glyph { color: var(--gold); }
+  .mentors { display: flex; gap: 5px; margin: 2px 0 8px 25px; }
+  .mono {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--accent); color: var(--accent);
+    font-family: var(--serif); font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .mono.more { border-style: dashed; color: var(--muted); border-color: var(--muted); font-size: 9.5px; font-family: var(--btn); }
+
+  .bottombar {
+    display: flex; justify-content: center; gap: 26px;
+    margin-top: 44px; padding: 16px 0 26px; border-top: 1px solid var(--line);
+    font-family: var(--btn); font-size: 12.5px;
+  }
+  .bottombar button {
+    font: inherit; background: none; border: none;
+    color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .bottombar button:hover { color: var(--accent); }
+  .bottombar .letter { color: var(--accent); }
+</style>
+
+<div class="chrome">
+  <b>СТОЛ · ПРОБА № 4 · СВЕДЁННЫЙ СТИЛЬ</b>
+  <span class="sw">
+    <i style="background:#f1e8d2" title="фон"></i><i style="background:#2b2416" title="чернила"></i><i style="background:#0e6f68" title="акцент"></i><i style="background:#b98a2e" title="золото"></i>
+  </span>
+  <span class="sw" title="статусы">
+    <i style="background:#8f8776"></i><i style="background:#d9a406"></i><i style="background:#2e5fbf"></i><i style="background:#7a4a1f"></i><i style="background:#2e7d44"></i>
+  </span>
+  <span class="hint">Фон — между пробами 2 и 3 · кнопки — начертание из «Архива» · статусы кликабельны · шрифт тетради выбирается</span>
+</div>
+
+<div class="stage">
+  <header class="masthead">
+    <h1>Стол</h1>
+    <p class="motto">У каждого писателя должен быть большой стол и вместительный кабинет.
+    Это их электронная версия: стол — для работы над текстом, кабинет — для памяти о том,
+    как растёт ваш стиль. Начните с Прописей — и через три итерации вы увидите себя в тексте.</p>
+    <div class="primers">
+      <button class="primer"><b>Прописи</b><span>три этапа, три наставника, один аудит</span></button>
+      <button class="primer"><b>Наставники</b><span>оси больших мастеров</span></button>
+      <button class="primer"><b>Аудит</b><span>что изменилось за три итерации</span></button>
+      <button class="primer"><b>Голос</b><span>портрет вашего стиля</span></button>
+    </div>
+  </header>
+
+  <div class="deskgrid">
+    <main>
+      <section class="workwin" id="win" data-status="edit" aria-label="Окно работы с текстом">
+        <span class="stamp" id="stamp">ПРАВКА</span>
+        <div class="win-head">
+          <span>Тетрадь · Она была хорошенькая</span>
+          <label class="fontpick">шрифт:
+            <select id="fontsel">
+              <option value='"Times New Roman", serif' selected>Таймс — как в книге</option>
+              <option value="Georgia, serif">Джорджия — мягче</option>
+              <option value="system-ui, sans-serif">Гротеск — без засечек</option>
+            </select>
+          </label>
+          <span class="st-name" id="stname">Правка</span>
+        </div>
+        <div class="win-body">
+          <div class="editor" id="editor">
+            <p><mark class="soul">Она была хорошенькая, прямо хоть на открытку с ангелочками:
+            белокурые кудряшки упрямо топорщатся вокруг головы</mark>, будто воздух внутри них
+            теплее, огромные карие глаза и детская припухлость лица — если, конечно, не замечать,
+            с каким сосредоточенным видом она рассматривает себя в зеркало и как старательно
+            удерживает равновесие.</p>
+            <p>Голова чуть повернута, как у балерины перед поклоном, вздёрнутый нос почти
+            упирается в отражение — она стоит совсем близко, и со стороны кажется, будто
+            примеряет она не обновку, а будущую жизнь…</p>
+            <p class="invite">…правьте прямо здесь. Окно тянется на весь экран, когда нужно только оно.</p>
+          </div>
+          <aside class="margins" aria-label="Поля рукописи">
+            <div class="m-title">На полях</div>
+            <p class="m-note">Первые два предложения держат всю сцену — их не трогать,
+            это голос.<small>— наставник · Довлатов</small></p>
+            <p class="m-note">А если примерка «будущей жизни» станет финалом?<small>— моя заметка, 5 июля</small></p>
+          </aside>
+        </div>
+        <div class="statusbar" role="group" aria-label="Статус рукописи">
+          <span class="lbl">Статус:</span>
+          <button class="chip" data-st="draft">Черновик</button>
+          <button class="chip" data-st="mentor">У наставника</button>
+          <button class="chip on" data-st="edit">Правка</button>
+          <button class="chip" data-st="audit">Аудит</button>
+          <button class="chip" data-st="done">Завершено</button>
+          <span class="auto-note">статус включается сам: скопировал промпт — «У наставника», вставил ответ — «Правка», принял финальный аудит — «Завершено» и на полку</span>
+        </div>
+      </section>
+
+      <section class="strip">
+        <h2>На столе · эта неделя</h2>
+        <div class="cards">
+          <div class="tcard" tabindex="0"><b>Она была хорошенькая</b><span>6 проходов · 2 депеши ждут</span></div>
+          <div class="tcard" tabindex="0"><b>Привычка говорить вслух</b><span>3 версии · 4 прохода</span></div>
+          <div class="tcard" tabindex="0"><b>Открытка с ангелочками</b><span>в картотеке</span></div>
+          <div class="tcard" tabindex="0"><b>Голос за стеной</b><span>черновик</span></div>
+          <div class="tcard" tabindex="0"><b>Письмо в редакцию</b><span>аудит пройден</span></div>
+          <button class="more-link">июнь и раньше → картотека</button>
+        </div>
+      </section>
+
+      <section class="cab">
+        <h2>Кабинет</h2>
+        <button class="cab-main">Пройти в Кабинет</button>
+        <div class="cab-row">
+          <button>Картотека</button>
+          <button>Полка</button>
+          <button>Изыскания</button>
+          <button>Голос</button>
+          <button>Аудиты</button>
+        </div>
+      </section>
+    </main>
+
+    <aside class="rail" aria-label="Инструменты">
+      <h3>Депеша наставнику</h3>
+      <button class="tool primary"><span class="glyph">⧉</span>Скопировать промпт</button>
+      <button class="tool primary"><span class="glyph">✉</span>Вставить ответ наставника</button>
+      <h3>Проходы</h3>
+      <button class="tool"><span class="glyph">〰</span>Не высушивать</button>
+      <button class="tool"><span class="glyph">✒</span>Наставники</button>
+      <div class="mentors" aria-hidden="true">
+        <span class="mono">Ч</span><span class="mono">С</span><span class="mono">З</span><span class="mono more">+10</span>
+      </div>
+      <button class="tool"><span class="glyph">↑</span>Усилить</button>
+      <h3>Кабинетные</h3>
+      <button class="tool"><span class="glyph">◎</span>Изыскание</button>
+      <button class="tool"><span class="glyph">☰</span>Аудит трёх итераций</button>
+      <button class="tool"><span class="glyph">✉</span>Сводка секретаря</button>
+      <h3>Текст</h3>
+      <button class="tool"><span class="glyph">✓</span>Зафиксировать версию</button>
+      <button class="tool"><span class="glyph">❧</span>Заметки на полях</button>
+      <button class="tool"><span class="glyph">⇩</span>Экспорт · Word / PDF</button>
+    </aside>
+  </div>
+
+  <footer class="bottombar">
+    <button>↑ Наверх</button>
+    <button>← На уровень выше</button>
+    <button class="letter">✉ Письмо мастеру</button>
+  </footer>
+</div>
+
+<script>
+  const names = { draft: "Черновик", mentor: "У наставника", edit: "Правка", audit: "Аудит", done: "Завершено" };
+  document.querySelectorAll(".chip").forEach(function (c) {
+    c.addEventListener("click", function () {
+      document.querySelectorAll(".chip").forEach(function (x) { x.classList.remove("on"); });
+      c.classList.add("on");
+      var st = c.dataset.st;
+      document.getElementById("win").dataset.status = st;
+      document.getElementById("stname").textContent = names[st];
+      document.getElementById("stamp").textContent = names[st].toUpperCase();
+    });
+  });
+  document.getElementById("fontsel").addEventListener("change", function (e) {
+    document.getElementById("editor").style.fontFamily = e.target.value;
+  });
+</script>
