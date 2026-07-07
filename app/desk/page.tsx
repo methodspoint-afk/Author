@@ -12,8 +12,15 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
 export default async function DeskPage() {
   const [notebooks, passes] = await Promise.all([getNotebooks(), getAllPasses()]);
 
+  const passById = new Map(passes.map((pass) => [pass.id, pass]));
+  // Тетради, состоящие из одних изысканий, живут в Кабинете, а не на Столе.
+  const isInquiryOnly = (notebook: (typeof notebooks)[number]): boolean =>
+    notebook.versionIds.length === 0 &&
+    notebook.passIds.length > 0 &&
+    notebook.passIds.every((id) => passById.get(id)?.type === "inquiry");
+
   const active = notebooks
-    .filter((notebook) => notebook.shelvedAt === undefined)
+    .filter((notebook) => notebook.shelvedAt === undefined && !isInquiryOnly(notebook))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   const dispatchedByNotebook = new Map<string, number>();

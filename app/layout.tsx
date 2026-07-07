@@ -17,9 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Link>
           <nav className="nav">
             <Link href="/desk">Стол</Link>
-            <span className="nav-soon" title="Появится на шаге 5 дорожной карты">
-              Кабинет
-            </span>
+            <Link href="/study">Кабинет</Link>
           </nav>
         </header>
         <main className="page">{children}</main>

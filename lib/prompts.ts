@@ -123,3 +123,98 @@ export function extractGrowthPoint(parsed: Record<string, string>): string | und
   const value = parsed["точка роста"];
   return value !== undefined && value.trim() !== "" ? value.trim() : undefined;
 }
+
+// --- Промпты Секретаря (Кабинет) ---
+
+const SECRETARY_ROLE = `Вы — литературный секретарь автора: человек, который знает, как автор пишет,
+и наводит для него справки. Вы не пишете и не переписываете тексты автора.
+Ваша работа — принести проверенное знание и честно указать границы его надёжности.`;
+
+export interface InquiryPromptInput {
+  topic: string;
+  sourceGrowthPoint?: string; // если изыскание отправлено от диагноза
+}
+
+export function buildInquiryPrompt({ topic, sourceGrowthPoint }: InquiryPromptInput): string {
+  const source =
+    sourceGrowthPoint !== undefined && sourceGrowthPoint.trim() !== ""
+      ? `\nПоводом стала точка роста из редакторского диагноза:\n«${sourceGrowthPoint.trim()}»\n`
+      : "";
+
+  return `${SECRETARY_ROLE}
+
+Задача — изыскания по теме: ${topic.trim()}
+${source}
+Что нужно: что известно об этом с точки зрения науки и серьёзной практики
+письма — исследования, разборы, эссе мастеров. Что подтверждает подход автора,
+что ставит его под сомнение. Никаких общих слов — только конкретные находки
+с указанием источника (автор, работа, год — насколько уверенно помните;
+если уверенности нет, честно пометьте).
+
+Ответ верните СТРОГО в следующем формате, без текста вне блока:
+
+===IRINAOS===
+[СЕКЦИЯ: справка]
+(главные находки, по пунктам)
+[СЕКЦИЯ: источники]
+(список источников с пометками надёжности)
+[СЕКЦИЯ: что взять в работу]
+(2–3 конкретных приёма или проверки, которые автор может применить сам)
+===КОНЕЦ===`;
+}
+
+export interface DigestPromptInput {
+  notebookTitle: string;
+  firstVersionText: string;
+  lastVersionText: string;
+  rounds: Array<{
+    label: string;
+    intention?: string;
+    diagnosis?: string;
+    growthPoint?: string;
+    versionNote?: string;
+  }>;
+}
+
+export function buildDigestPrompt(input: DigestPromptInput): string {
+  const rounds = input.rounds
+    .map((round, index) => {
+      const parts = [`Итерация ${index + 1} — ${round.label}`];
+      if (round.intention !== undefined) parts.push(`Намерение: ${round.intention}`);
+      if (round.diagnosis !== undefined) parts.push(`Диагноз: ${round.diagnosis}`);
+      if (round.growthPoint !== undefined) parts.push(`Точка роста: ${round.growthPoint}`);
+      if (round.versionNote !== undefined) parts.push(`Правка автора: ${round.versionNote}`);
+      return parts.join("\n");
+    })
+    .join("\n\n");
+
+  return `${SECRETARY_ROLE}
+
+Задача — сводка по тетради «${input.notebookTitle}»: несколько итераций работы
+над одним фрагментом позади, сведите сделанное. Что реально сдвинулось от первой
+версии к последней (по существу, не по мелочи), какие диагнозы подтверждались
+повторно, какая линия роста проступает сквозь все итерации. Без пересказа
+каждой итерации — только сквозные наблюдения.
+
+Первая версия фрагмента:
+<<<НАЧАЛО>>>
+${input.firstVersionText}
+<<<КОНЕЦ>>>
+
+Последняя версия фрагмента:
+<<<НАЧАЛО>>>
+${input.lastVersionText}
+<<<КОНЕЦ>>>
+
+История итераций:
+${rounds}
+
+Ответ верните СТРОГО в следующем формате, без текста вне блока:
+
+===IRINAOS===
+[СЕКЦИЯ: сводка]
+(что сдвинулось и какая линия роста проступает)
+[СЕКЦИЯ: точка роста]
+(одна главная зона роста на следующий круг)
+===КОНЕЦ===`;
+}

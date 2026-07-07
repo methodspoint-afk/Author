@@ -1,23 +1,15 @@
 import { notFound } from "next/navigation";
 import FragmentPane from "../../../components/FragmentPane";
 import NewPassForm from "../../../components/NewPassForm";
-import PassActions from "../../../components/PassActions";
+import PassCard from "../../../components/PassCard";
 import { COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
-import { checkIterationLaw } from "../../../lib/iteration";
-import { COMPASS_TITLES, PASS_STATUS_LABELS, PASS_TYPE_LABELS } from "../../../lib/passMeta";
+import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
 import { readCollection } from "../../../lib/storage";
-import type { FragmentVersion, Pass } from "../../../lib/types";
+import type { FragmentVersion } from "../../../lib/types";
+import { commitToCorpus, createDigest, reopenNotebook, shelveNotebook } from "../actions";
 
 export const dynamic = "force-dynamic";
-
-const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
-  day: "numeric",
-  month: "long",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "UTC",
-});
 
 export default async function NotebookPage({
   params,
@@ -36,10 +28,47 @@ export default async function NotebookPage({
   ]);
 
   const law = checkIterationLaw(notebook, allPasses, allVersions);
+  const completedLensCount = passes.filter(
+    (pass) => isLensPass(pass.type) && pass.status === "completed",
+  ).length;
 
   return (
     <>
       <h1>{notebook.title}</h1>
+      <div className="notebook-toolbar">
+        {completedLensCount >= 2 && (
+          <form action={createDigest}>
+            <input type="hidden" name="notebookId" value={notebook.id} />
+            <button type="submit" className="toolbar-button">
+              Сводка секретаря
+            </button>
+          </form>
+        )}
+        <form action={commitToCorpus}>
+          <input type="hidden" name="notebookId" value={notebook.id} />
+          <button type="submit" className="toolbar-button">
+            {notebook.committedPath !== undefined ? "Обновить в картотеке" : "Внести в картотеку"}
+          </button>
+        </form>
+        {notebook.shelvedAt === undefined ? (
+          <form action={shelveNotebook}>
+            <input type="hidden" name="notebookId" value={notebook.id} />
+            <button type="submit" className="toolbar-button">
+              На полку
+            </button>
+          </form>
+        ) : (
+          <form action={reopenNotebook}>
+            <input type="hidden" name="notebookId" value={notebook.id} />
+            <button type="submit" className="toolbar-button">
+              Вернуть на стол
+            </button>
+          </form>
+        )}
+        {notebook.committedPath !== undefined && (
+          <span className="tag-committed">в картотеке: {notebook.committedPath}</span>
+        )}
+      </div>
       <div className="notebook-page">
         <FragmentPane
           key={versions.length}
@@ -69,70 +98,6 @@ export default async function NotebookPage({
           )}
         </aside>
       </div>
-    </>
-  );
-}
-
-function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpen: boolean }) {
-  const title =
-    pass.type === "mentor-compass" && pass.compassId !== undefined
-      ? `Компас: ${COMPASS_TITLES[pass.compassId] ?? pass.compassId}`
-      : PASS_TYPE_LABELS[pass.type];
-
-  return (
-    <details className="pass-card" open={defaultOpen}>
-      <summary>
-        {title}{" "}
-        <span className="pass-status" data-status={pass.status}>
-          · {PASS_STATUS_LABELS[pass.status]}
-          {pass.completedAt !== undefined &&
-            ` · ${dateTimeFormat.format(new Date(pass.completedAt))}`}
-        </span>
-      </summary>
-      <div className="pass-body">
-        {pass.intention !== undefined && <p>Намерение: {pass.intention}</p>}
-        {pass.inquiryTopic !== undefined && <p>Тема изыскания: {pass.inquiryTopic}</p>}
-        <details>
-          <summary>Депеша (промпт)</summary>
-          <pre>{pass.promptText}</pre>
-        </details>
-        {pass.parsedResult !== undefined && (
-          <details open={pass.status === "completed"}>
-            <summary>Диагноз</summary>
-            <ParsedResult result={pass.parsedResult} />
-          </details>
-        )}
-        {pass.rawResponse !== undefined && (
-          <details>
-            <summary>Ответ целиком</summary>
-            <pre>{pass.rawResponse}</pre>
-          </details>
-        )}
-        <PassActions
-          passId={pass.id}
-          status={pass.status}
-          promptText={pass.promptText}
-          {...(pass.lastParseFailed !== undefined && { lastParseFailed: pass.lastParseFailed })}
-        />
-      </div>
-    </details>
-  );
-}
-
-function ParsedResult({ result }: { result: Record<string, string> | Record<string, string>[] }) {
-  const blocks = Array.isArray(result) ? result : [result];
-  return (
-    <>
-      {blocks.map((block, blockIndex) => (
-        <dl key={blockIndex} className="pass-result">
-          {Object.entries(block).map(([key, value]) => (
-            <div key={key}>
-              <dt>{key}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-      ))}
     </>
   );
 }

@@ -206,3 +206,210 @@ export async function submitPassResponse(
   refresh(pass.notebookId);
   return {};
 }
+
+// --- Действия Секретаря (Кабинет, ТЗ §5.3) ---
+
+/** Отправить секретаря за справкой от точки роста завершённого прохода. */
+export async function createInquiryFromPass(formData: FormData): Promise<void> {
+  const passId = String(formData.get("passId") ?? "");
+  const { notebooks, passes } = await loadAll();
+  const sourcePass = passes.find((entry) => entry.id === passId);
+  if (sourcePass === undefined || sourcePass.parsedResult === undefined) return;
+
+  const parsed = Array.isArray(sourcePass.parsedResult)
+    ? sourcePass.parsedResult[0]
+    : sourcePass.parsedResult;
+  if (parsed === undefined) return;
+  const { extractGrowthPoint } = await import("../../lib/prompts");
+  const growthPoint = extractGrowthPoint(parsed);
+  if (growthPoint === undefined) return;
+
+  const notebook = notebooks.find((entry) => entry.id === sourcePass.notebookId);
+  if (notebook === undefined) return;
+
+  const { buildInquiryPrompt } = await import("../../lib/prompts");
+  const topic = growthPoint.length > 120 ? `${growthPoint.slice(0, 117)}…` : growthPoint;
+  const pass: Pass = {
+    id: randomUUID(),
+    type: "inquiry",
+    label: `Изыскание: ${topic}`,
+    notebookId: notebook.id,
+    inquiryTopic: topic,
+    sourcePassId: sourcePass.id,
+    promptText: buildInquiryPrompt({ topic, sourceGrowthPoint: growthPoint }),
+    status: "draft",
+  };
+
+  passes.push(pass);
+  notebook.passIds.push(pass.id);
+  notebook.updatedAt = new Date().toISOString();
+
+  await writeCollection("passes.json", passes);
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebook.id);
+  revalidatePath("/study/inquiries");
+}
+
+/** Изыскание по собственному запросу — из Кабинета. */
+export async function createInquiry(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const topic = String(formData.get("topic") ?? "").trim();
+  if (topic === "") return { error: "Назовите тему изыскания." };
+
+  const { notebooks, passes } = await loadAll();
+  const { buildInquiryPrompt } = await import("../../lib/prompts");
+  const now = new Date().toISOString();
+
+  const notebook: Notebook = {
+    id: `inq-${randomUUID().slice(0, 8)}`,
+    title: `Изыскание: ${topic}`,
+    createdAt: now,
+    updatedAt: now,
+    versionIds: [],
+    passIds: [],
+  };
+  const pass: Pass = {
+    id: randomUUID(),
+    type: "inquiry",
+    label: `Изыскание: ${topic}`,
+    notebookId: notebook.id,
+    inquiryTopic: topic,
+    promptText: buildInquiryPrompt({ topic }),
+    status: "draft",
+  };
+  notebook.passIds.push(pass.id);
+
+  notebooks.push(notebook);
+  passes.push(pass);
+  await writeCollection("notebooks.json", notebooks);
+  await writeCollection("passes.json", passes);
+  revalidatePath("/study/inquiries");
+  revalidatePath("/study");
+  return {};
+}
+
+/** Сводка по тетради: секретарь сводит несколько итераций (ТЗ §9). */
+export async function createDigest(formData: FormData): Promise<void> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const { notebooks, passes, versions } = await loadAll();
+  const notebook = notebooks.find((entry) => entry.id === notebookId);
+  if (notebook === undefined) return;
+
+  const notebookPasses = notebook.passIds
+    .map((id) => passes.find((pass) => pass.id === id))
+    .filter((pass): pass is Pass => pass !== undefined);
+  const { isLensPass } = await import("../../lib/iteration");
+  const completedLens = notebookPasses.filter(
+    (pass) => isLensPass(pass.type) && pass.status === "completed",
+  );
+  if (completedLens.length < 2) return; // сводка имеет смысл от двух итераций
+
+  const notebookVersions = notebook.versionIds
+    .map((id) => versions.find((version) => version.id === id))
+    .filter((version): version is FragmentVersion => version !== undefined);
+  const first = notebookVersions[0];
+  const last = notebookVersions[notebookVersions.length - 1];
+  if (first === undefined || last === undefined) return;
+
+  const { buildDigestPrompt } = await import("../../lib/prompts");
+  const versionByBasedOn = new Map(
+    notebookVersions
+      .filter((version) => version.basedOnPassId !== undefined)
+      .map((version) => [version.basedOnPassId as string, version]),
+  );
+
+  const prompt = buildDigestPrompt({
+    notebookTitle: notebook.title,
+    firstVersionText: first.text,
+    lastVersionText: last.text,
+    rounds: completedLens.map((pass) => {
+      const parsed = Array.isArray(pass.parsedResult) ? pass.parsedResult[0] : pass.parsedResult;
+      const closingVersion = versionByBasedOn.get(pass.id);
+      return {
+        label: pass.label,
+        ...(pass.intention !== undefined && { intention: pass.intention }),
+        ...(parsed?.["диагноз"] !== undefined && { diagnosis: parsed["диагноз"] }),
+        ...(parsed?.["точка роста"] !== undefined && { growthPoint: parsed["точка роста"] }),
+        ...(closingVersion?.note !== undefined && { versionNote: closingVersion.note }),
+      };
+    }),
+  });
+
+  const pass: Pass = {
+    id: randomUUID(),
+    type: "digest",
+    label: "Сводка секретаря",
+    notebookId,
+    promptText: prompt,
+    status: "draft",
+  };
+  passes.push(pass);
+  notebook.passIds.push(pass.id);
+  notebook.updatedAt = new Date().toISOString();
+
+  await writeCollection("passes.json", passes);
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebookId);
+}
+
+/** Внести тетрадь в картотеку: markdown-кейс в learning/corpus/. */
+export async function commitToCorpus(formData: FormData): Promise<void> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const { notebooks, passes, versions } = await loadAll();
+  const notebook = notebooks.find((entry) => entry.id === notebookId);
+  if (notebook === undefined) return;
+
+  const notebookVersions = notebook.versionIds
+    .map((id) => versions.find((version) => version.id === id))
+    .filter((version): version is FragmentVersion => version !== undefined);
+  const notebookPasses = notebook.passIds
+    .map((id) => passes.find((pass) => pass.id === id))
+    .filter((pass): pass is Pass => pass !== undefined);
+
+  const { buildCaseMarkdown, corpusFileName, CORPUS_DIR } = await import("../../lib/corpus");
+  const fileName = corpusFileName(notebook, new Date());
+  await fs.mkdir(CORPUS_DIR, { recursive: true });
+  await fs.writeFile(
+    path.join(CORPUS_DIR, fileName),
+    buildCaseMarkdown(notebook, notebookVersions, notebookPasses),
+    "utf8",
+  );
+
+  notebook.committedPath = `learning/corpus/${fileName}`;
+  notebook.updatedAt = new Date().toISOString();
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebookId);
+  revalidatePath("/study/card-index");
+  revalidatePath("/study");
+}
+
+/** На полку: снять со стола, не публикуя (полка ≠ картотека, ТЗ §7.5). */
+export async function shelveNotebook(formData: FormData): Promise<void> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const notebooks = await readCollection<Notebook>("notebooks.json");
+  const notebook = notebooks.find((entry) => entry.id === notebookId);
+  if (notebook === undefined) return;
+
+  notebook.shelvedAt = new Date().toISOString();
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebookId);
+  revalidatePath("/study/shelf");
+  revalidatePath("/study");
+}
+
+/** Вернуть тетрадь с полки на стол. */
+export async function reopenNotebook(formData: FormData): Promise<void> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const notebooks = await readCollection<Notebook>("notebooks.json");
+  const notebook = notebooks.find((entry) => entry.id === notebookId);
+  if (notebook === undefined) return;
+
+  delete notebook.shelvedAt;
+  notebook.updatedAt = new Date().toISOString();
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebookId);
+  revalidatePath("/study/shelf");
+  revalidatePath("/study");
+}
