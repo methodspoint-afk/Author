@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getCompass } from "../../lib/compasses";
 import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
 import {
@@ -70,6 +71,52 @@ export async function commitVersion(formData: FormData): Promise<void> {
   await writeCollection("fragment-versions.json", versions);
   await writeCollection("notebooks.json", notebooks);
   refresh(notebookId);
+}
+
+/**
+ * Новая тетрадь со Стола (ТЗ «Тетрадь» v1 §6): текст из окна становится
+ * первой версией. Лимит 5000 знаков — правило маршрута Прописей.
+ */
+export async function createNotebook(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const text = String(formData.get("text") ?? "").trim();
+  if (text === "") {
+    return { error: "Тетрадь начинается с текста — напишите или вставьте его." };
+  }
+  if (text.length > 5000) {
+    return { error: "В одну тетрадь помещается до 5000 знаков — сократите или разделите на две." };
+  }
+  const titleRaw = String(formData.get("title") ?? "").trim();
+  const title =
+    titleRaw !== "" ? titleRaw : text.split(/\s+/).slice(0, 6).join(" ").slice(0, 60);
+
+  const { notebooks, versions } = await loadAll();
+  const now = new Date().toISOString();
+  const notebook: Notebook = {
+    id: `nb-${randomUUID().slice(0, 8)}`,
+    title,
+    createdAt: now,
+    updatedAt: now,
+    versionIds: [],
+    passIds: [],
+  };
+  const version: FragmentVersion = {
+    id: randomUUID(),
+    notebookId: notebook.id,
+    text,
+    createdAt: now,
+    note: "Первый текст",
+  };
+  notebook.versionIds.push(version.id);
+  notebooks.push(notebook);
+  versions.push(version);
+
+  await writeCollection("notebooks.json", notebooks);
+  await writeCollection("fragment-versions.json", versions);
+  revalidatePath("/desk");
+  redirect(`/desk/${notebook.id}`);
 }
 
 /** Создание прохода-линзы (ТЗ §5.2, шаги 1–2). Проверяет закон итерации. */

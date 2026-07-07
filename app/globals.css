@@ -1,15 +1,25 @@
-/* Тон интерфейса (ТЗ §5.5): тихо, точно, текст — герой. */
+/* Тон интерфейса: тихо, точно, текст — герой.
+   Палитра и шрифты — дизайн-паспорт «Тетради» (ТЗ v1 §10). */
 
 :root {
-  --ink: #1c1a17;
-  --ink-soft: #6b655d;
-  --paper: #faf8f4;
-  --card: #ffffff;
-  --line: #e4ded4;
-  --accent: #7a5c3e;
-  --accent-soft: #f1e9dd;
-  --ok: #3d6b4f;
-  --wait: #8a6d2f;
+  --ink: #2b2416;
+  --ink-soft: #7c6f52;
+  --paper: #f1e8d2;
+  --card: #faf5e8;
+  --line: #cfc09a;
+  --accent: #0e6f68;
+  --accent-soft: #e3ede9;
+  --gold: #b98a2e;
+  --ok: #2e7d44;
+  --wait: #9a7606;
+  /* статусы тетради (ТЗ v1 §4): серый · жёлтый · синий · коричневый · зелёный */
+  --st-draft: #8f8776;
+  --st-mentor: #d9a406;
+  --st-edit: #2e5fbf;
+  --st-audit: #7a4a1f;
+  --st-done: #2e7d44;
+  --serif: var(--font-serif, Georgia), "Times New Roman", serif;
+  --mono: var(--font-mono, "Courier New"), monospace;
 }
 
 * {
@@ -20,7 +30,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--serif);
   font-size: 16px;
   line-height: 1.55;
 }
@@ -183,7 +193,7 @@ a {
   resize: vertical;
   background: transparent;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--serif);
   font-size: 1.08rem;
   line-height: 1.7;
 }
@@ -610,4 +620,311 @@ a {
   border-left: 3px solid var(--accent);
   padding-left: 0.8rem;
   margin: -0.5rem 0 1.25rem;
+}
+
+/* ============ Новый Стол (ТЗ «Тетрадь» v1 §6, дизайн-проба 4.1) ============ */
+
+/* Шапка: манифест + четыре кнопки-раскрывашки */
+
+.masthead {
+  margin-bottom: 2rem;
+}
+
+.masthead h1 {
+  font-size: clamp(2rem, 4.5vw, 2.9rem);
+  margin: 0 0 0.6rem;
+}
+
+.masthead h1::after {
+  content: " ❦";
+  color: var(--gold);
+  font-size: 0.5em;
+  vertical-align: middle;
+}
+
+.motto {
+  max-width: 62ch;
+  color: var(--ink-soft);
+  margin: 0 0 1.1rem;
+}
+
+.primers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.primer {
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--card);
+}
+
+.primer summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.55rem 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.primer summary::-webkit-details-marker {
+  display: none;
+}
+
+.primer summary b {
+  color: var(--accent);
+  display: block;
+  font-size: 0.85rem;
+}
+
+.primer summary span {
+  color: var(--ink-soft);
+}
+
+.primer[open] {
+  border-color: var(--accent);
+}
+
+.primer p {
+  margin: 0;
+  padding: 0 0.9rem 0.7rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  max-width: 34ch;
+}
+
+/* Окно текста: рамка-статус */
+
+.workwin {
+  background: var(--card);
+  border: 2px solid var(--st-draft);
+  border-radius: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--st-draft) 14%, transparent);
+  margin-bottom: 2.2rem;
+}
+
+.workwin[data-status="empty"] {
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.win-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.7rem 1.3rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.win-title-input {
+  flex: 1;
+  min-width: 14rem;
+  max-width: 26rem;
+  border: none;
+  border-bottom: 1px dashed var(--line);
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  padding: 0.2rem 0.1rem;
+  outline: none;
+}
+
+.win-title-input:focus {
+  border-bottom-color: var(--accent);
+}
+
+.win-editor {
+  display: block;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.08rem;
+  line-height: 1.7;
+  padding: 1.3rem 1.6rem;
+  min-height: 14rem;
+}
+
+.win-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.2rem;
+  padding: 0.7rem 1.3rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+.char-count {
+  color: var(--ink-soft);
+}
+
+.char-count.warn {
+  color: var(--wait);
+}
+
+.win-foot button {
+  margin-left: auto;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--card);
+  border-radius: 2px;
+  padding: 0.5rem 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.win-foot button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Лента «На столе» */
+
+.strip-title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.8rem;
+}
+
+.strip {
+  display: flex;
+  gap: 0.8rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+  margin-bottom: 2.2rem;
+}
+
+.strip-card {
+  min-width: 13rem;
+  flex: 0 0 auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--st-draft);
+  border-radius: 2px;
+  padding: 0.8rem 1rem;
+}
+
+.strip-card[data-st="mentor"] { border-left-color: var(--st-mentor); }
+.strip-card[data-st="edit"] { border-left-color: var(--st-edit); }
+.strip-card[data-st="done"] { border-left-color: var(--st-done); }
+
+.strip-card:hover {
+  border-color: var(--accent);
+}
+
+.strip-card a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.strip-card a:hover {
+  color: var(--accent);
+}
+
+.strip-meta {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
+
+.strip-more {
+  align-self: center;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+/* Кабинет: главная кнопка + подчинённые */
+
+.cab-main {
+  display: block;
+  text-align: center;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 2px;
+  padding: 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.cab-main:hover {
+  background: var(--accent);
+  color: var(--card);
+}
+
+.cab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.cab-row a {
+  flex: 1 1 auto;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  padding: 0.5rem 0.7rem;
+  text-decoration: none;
+}
+
+.cab-row a:hover {
+  background: var(--accent);
+  color: var(--card);
+}
+
+/* Нижняя панель */
+
+.bottombar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  padding: 1rem 1rem 1.6rem;
+  border-top: 1px solid var(--line);
+  margin-top: 2.5rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+.bottombar a {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.bottombar a:hover,
+.bottombar .letter {
+  color: var(--accent);
 }
