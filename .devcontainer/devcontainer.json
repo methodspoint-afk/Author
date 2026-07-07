@@ -2,7 +2,7 @@
   "name": "Стол и Кабинет",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
   "postCreateCommand": "npm install",
-  "postAttachCommand": "npm run dev",
+  "postStartCommand": "nohup npm run dev > /tmp/dev-server.log 2>&1 &",
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {
