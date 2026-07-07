@@ -65,19 +65,19 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
           placeholder={versions.length === 0 ? "В этой тетради пока нет текста — начните здесь." : undefined}
           spellCheck={false}
         />
-        {changed && (
-          <div className="commit-bar">
-            <input type="text" name="note" placeholder="Что изменилось?" autoComplete="off" />
-            <button type="submit">Зафиксировать версию</button>
-          </div>
-        )}
+        <div className="commit-bar">
+          <input type="text" name="note" placeholder="Что изменилось?" autoComplete="off" disabled={!changed} />
+          <button type="submit" disabled={!changed}>
+            Зафиксировать версию
+          </button>
+        </div>
       </form>
 
-      {!changed && versions.length > 0 && (
-        <p className="pane-hint">
-          Правьте текст прямо здесь. Как только он изменится, появится кнопка фиксации версии.
-        </p>
-      )}
+      <p className="pane-hint">
+        {changed
+          ? "Готовы остановиться? Зафиксируйте версию — решаете вы."
+          : "Правьте текст прямо здесь. Когда решите, что версия готова, — зафиксируйте её."}
+      </p>
     </section>
   );
 }
