@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { deletePass, markDispatched, submitPassResponse, type ActionResult } from "../app/desk/actions";
+import { AI_LINK_KEY, aiLinkLabel, DEFAULT_AI_LINK, normalizeAiLink } from "../lib/aiLink";
 import type { PassStatus } from "../lib/types";
 
 // BYOK-ритуал (ТЗ §6.1): передать депешу — вставить ответ.
@@ -21,6 +22,24 @@ export default function PassActions({
 }: PassActionsProps) {
   const [copied, setCopied] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [aiLink, setAiLink] = useState(DEFAULT_AI_LINK);
+  const [editingLink, setEditingLink] = useState(false);
+  const [linkDraft, setLinkDraft] = useState("");
+
+  // Адрес своей ИИ — из браузера автора (BYOK: система ИИ не навязывает).
+  useEffect(() => {
+    const stored = window.localStorage.getItem(AI_LINK_KEY);
+    if (stored !== null && normalizeAiLink(stored) !== undefined) setAiLink(stored);
+  }, []);
+
+  function saveLink() {
+    const normalized = normalizeAiLink(linkDraft);
+    if (normalized !== undefined) {
+      window.localStorage.setItem(AI_LINK_KEY, normalized);
+      setAiLink(normalized);
+    }
+    setEditingLink(false);
+  }
   const [state, formAction, pending] = useActionState<ActionResult | undefined, FormData>(
     submitPassResponse,
     undefined,
@@ -48,13 +67,42 @@ export default function PassActions({
       <button type="button" className="copy-button" onClick={copyPrompt}>
         {copied ? "Депеша скопирована" : status === "draft" ? "Передать депешу" : "Скопировать ещё раз"}
       </button>
-      <p className="pane-hint">
-        Вставьте депешу в{" "}
-        <a href="https://claude.ai/new" target="_blank" rel="noreferrer">
-          claude.ai
-        </a>
-        , а полученный ответ — сюда.
-      </p>
+      {!editingLink ? (
+        <p className="pane-hint">
+          Вставьте депешу в{" "}
+          <a href={aiLink} target="_blank" rel="noreferrer">
+            {aiLinkLabel(aiLink)}
+          </a>
+          , а полученный ответ — сюда.{" "}
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => {
+              setLinkDraft(aiLink);
+              setEditingLink(true);
+            }}
+          >
+            изменить
+          </button>
+        </p>
+      ) : (
+        <p className="pane-hint ai-link-edit">
+          Адрес вашей ИИ:{" "}
+          <input
+            type="text"
+            value={linkDraft}
+            onChange={(event) => setLinkDraft(event.target.value)}
+            placeholder="например: chatgpt.com или gemini.google.com"
+            autoComplete="off"
+          />{" "}
+          <button type="button" className="link-button" onClick={saveLink}>
+            сохранить
+          </button>{" "}
+          <button type="button" className="link-button" onClick={() => setEditingLink(false)}>
+            отмена
+          </button>
+        </p>
+      )}
       <form action={formAction}>
         <input type="hidden" name="passId" value={passId} />
         <textarea

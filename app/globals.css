@@ -638,6 +638,18 @@ a {
   text-align: right;
 }
 
+/* Адрес своей ИИ у депеши */
+
+.ai-link-edit input {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+  background: var(--paper);
+  min-width: 16rem;
+}
+
 /* Восстановленный черновик */
 
 .draft-note {
