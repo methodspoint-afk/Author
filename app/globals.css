@@ -602,6 +602,45 @@ a {
   margin: 0.15rem 0;
 }
 
+/* Заведение новой тетради */
+
+.new-notebook {
+  width: 100%;
+}
+
+.new-notebook > summary {
+  display: inline-block;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.new-notebook > summary::-webkit-details-marker {
+  display: none;
+}
+
+.new-notebook > summary:hover {
+  border-color: var(--accent);
+}
+
+.new-notebook[open] > summary {
+  margin-bottom: 0.8rem;
+}
+
+.new-notebook .lens-form {
+  max-width: 40rem;
+}
+
+.new-notebook textarea {
+  font-family: Georgia, "Times New Roman", serif;
+  min-height: 10rem;
+}
+
 /* Тихая строка секретаря (ТЗ §5.4): строка, не модал */
 
 .secretary-note {

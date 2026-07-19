@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NewNotebookForm from "../../components/NewNotebookForm";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { auditReminder, readLastAuditDate } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
@@ -49,8 +50,11 @@ export default async function DeskPage() {
           — пора сверить <Link href="/study/voice">портрет голоса</Link>.
         </p>
       )}
+      <div className="notebook-toolbar">
+        <NewNotebookForm />
+      </div>
       {active.length === 0 ? (
-        <p className="empty-note">На столе пусто. Все тетради — на полке.</p>
+        <p className="empty-note">На столе пусто. Заведите новую тетрадь или верните что-то с полки.</p>
       ) : (
         <ul className="notebook-list">
           {active.map((notebook) => {

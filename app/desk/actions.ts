@@ -4,8 +4,10 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getCompass } from "../../lib/compasses";
 import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
+import { buildNewNotebook } from "../../lib/notebook";
 import {
   buildCompassPrompt,
   buildDryOutPrompt,
@@ -31,6 +33,33 @@ async function loadAll() {
 function refresh(notebookId: string): void {
   revalidatePath("/desk");
   revalidatePath(`/desk/${notebookId}`);
+}
+
+/**
+ * Завести новую тетрадь: название + первый текст фрагмента (ТЗ §3.2).
+ * Тетрадь рождается сразу с первой версией и уводит автора на свою страницу.
+ */
+export async function createNotebook(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const built = buildNewNotebook(
+    {
+      title: String(formData.get("title") ?? ""),
+      text: String(formData.get("text") ?? ""),
+    },
+    new Date().toISOString(),
+    randomUUID,
+  );
+  if (!built.ok) return { error: built.error };
+
+  const { notebooks, versions } = await loadAll();
+  versions.push(built.version);
+  notebooks.push(built.notebook);
+  await writeCollection("fragment-versions.json", versions);
+  await writeCollection("notebooks.json", notebooks);
+  revalidatePath("/desk");
+  redirect(`/desk/${built.notebook.id}`);
 }
 
 /**
