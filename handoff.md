@@ -4,7 +4,31 @@
 
 ## В РАБОТЕ
 
-*(пусто — незавершённых задач нет)*
+- **Задача:** Блок А аудита UX — три тупика: (1) проход нельзя удалить, хотя
+  закон итерации предлагает «удалите его» — ошибочный черновик блокирует
+  тетрадь; (2) незафиксированная правка в окне текста гибнет при F5/уходе со
+  страницы — нужен автосейв черновика; (3) напоминание об аудите ведёт на
+  /study/voice, где аудит нельзя провести — нужен флоу «Провести аудит»
+  (депеша секретаря из пар версий → ответ → файл learning/audits/).
+- **План:**
+  1. `lib/notebook.ts`: чистый `removePass` (только не-completed; подчистка
+     тетрадей-призраков без версий и проходов) + action `deletePass` +
+     кнопка с двухшаговым подтверждением в PassActions.
+  2. `lib/draft.ts` (ключ и правило восстановления) + автосейв в localStorage,
+     восстановление с тихой строкой и «отбросить», beforeunload в FragmentPane.
+  3. Тип прохода `audit`: `lib/audit.ts` (collectAuditPairs, buildAuditMarkdown,
+     writeAuditFile), `buildAuditPrompt` в prompts.ts, action `startAudit`,
+     запись файла аудита в `submitPassResponse` при завершении, секция «Аудит»
+     на /study/voice, фильтр тетрадей Кабинета на Столе.
+  4. Тесты: remove-pass, draft, audit. Проверка вживую.
+- **Файлы:** lib/notebook.ts, lib/draft.ts, lib/audit.ts, lib/prompts.ts,
+  lib/types.ts, lib/passMeta.ts, app/desk/actions.ts, app/desk/page.tsx,
+  app/study/voice/page.tsx, components/PassActions.tsx,
+  components/FragmentPane.tsx, app/globals.css, tests/*.
+- **Критерий готовности:** черновик/отправленный проход удаляется из UI и
+  разблокирует тетрадь; правка переживает F5; со страницы «Портрет голоса»
+  запускается аудит, ответ сохраняется в learning/audits/ и напоминание
+  гаснет. Тесты, typecheck, build зелёные.
 
 <!--
   Когда начинается задача разработки, заглушка выше заменяется блоком:
