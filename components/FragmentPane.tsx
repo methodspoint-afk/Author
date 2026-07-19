@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { commitVersion } from "../app/desk/actions";
 import { diffWords } from "../lib/diff";
 import { draftKey, shouldRestoreDraft } from "../lib/draft";
+import { textStats } from "../lib/textStats";
 
 // Окно текста — святое (ТЗ §5.1, §11.1). Текст в центре, редактируемый;
 // во время правки — никаких подсказок и подчёркиваний. Незафиксированная
@@ -114,6 +115,12 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
           placeholder={versions.length === 0 ? "В этой тетради пока нет текста — начните здесь." : undefined}
           spellCheck={false}
         />
+        {draft.trim() !== "" && (
+          <p className="text-stats">
+            слов: {textStats(draft).words.toLocaleString("ru-RU")} · знаков:{" "}
+            {textStats(draft).chars.toLocaleString("ru-RU")}
+          </p>
+        )}
         {changed && (
           <div className="commit-bar">
             <input type="text" name="note" placeholder="Что изменилось?" autoComplete="off" />
