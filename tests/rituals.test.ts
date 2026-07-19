@@ -35,4 +35,20 @@ describe("напоминание об аудите", () => {
     // learning/audits/AUDIT-2026-07.md содержит «Дата: 2026-07-05»
     expect(await readLastAuditDate()).toBe("2026-07-05");
   });
+
+  it("readLastAuditDate берёт максимум по дате, а не по имени файла", async () => {
+    // Лексикографически AUDIT-2026-07.md > AUDIT-2026-07-19.md («.» > «-»),
+    // но последний аудит — тот, чья «Дата:» позже.
+    const { promises: fs } = await import("node:fs");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "irinaos-audit-"));
+    const dir = path.join(root, "learning", "audits");
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, "AUDIT-2026-07.md"), "Дата: 2026-07-05", "utf8");
+    await fs.writeFile(path.join(dir, "AUDIT-2026-07-19.md"), "Дата: 2026-07-19", "utf8");
+
+    expect(await readLastAuditDate(root)).toBe("2026-07-19");
+    await fs.rm(root, { recursive: true, force: true });
+  });
 });

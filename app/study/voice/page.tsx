@@ -1,6 +1,13 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import PassCard from "../../../components/PassCard";
+import { collectAuditPairs } from "../../../lib/audit";
+import { getAllPasses, getNotebooks } from "../../../lib/data";
 import { readDeltaTables } from "../../../lib/deltas";
+import { readLastAuditDate } from "../../../lib/rituals";
+import { readCollection } from "../../../lib/storage";
+import type { FragmentVersion } from "../../../lib/types";
+import { startAudit } from "../../desk/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +41,18 @@ async function readAudits(): Promise<Array<{ name: string; content: string }>> {
 }
 
 export default async function VoicePage() {
-  const [voiceCore, deltas, audits] = await Promise.all([
+  const [voiceCore, deltas, audits, notebooks, passes, versions, lastAuditDate] = await Promise.all([
     readIfExists(path.join(process.cwd(), "learning", "AUTHOR-VOICE-CORE.md")),
     readDeltaTables(),
     readAudits(),
+    getNotebooks(),
+    getAllPasses(),
+    readCollection<FragmentVersion>("fragment-versions.json"),
+    readLastAuditDate(),
   ]);
+
+  const activeAudit = passes.find((pass) => pass.type === "audit" && pass.status !== "completed");
+  const pairs = collectAuditPairs(notebooks, versions, lastAuditDate);
 
   return (
     <>
@@ -47,6 +61,30 @@ export default async function VoicePage() {
         Портрет — качественный, не численный: словами и примерами, не графиками. Данные живут в
         markdown-файлах (learning/), эта страница их только показывает.
       </p>
+
+      <h2>Аудит</h2>
+      {activeAudit !== undefined ? (
+        <div className="pass-list inquiries-list">
+          <PassCard pass={activeAudit} defaultOpen />
+        </div>
+      ) : pairs.length > 0 ? (
+        <div className="lens-block audit-block">
+          <p>
+            С последнего аудита{lastAuditDate !== undefined && ` (${lastAuditDate})`} накопилось
+            правок: {pairs.length}. Секретарь соберёт депешу из пар «было ↔ стало».
+          </p>
+          <form action={startAudit}>
+            <button type="submit" className="toolbar-button">
+              Провести аудит
+            </button>
+          </form>
+        </div>
+      ) : (
+        <p className="empty-note">
+          Новых правок с последнего аудита{lastAuditDate !== undefined && ` (${lastAuditDate})`} нет
+          — сверять нечего.
+        </p>
+      )}
 
       <h2>Подтверждённые механики</h2>
       {voiceCore !== undefined ? (

@@ -1,4 +1,4 @@
-import type { FragmentVersion, Notebook } from "./types";
+import type { FragmentVersion, Notebook, Pass } from "./types";
 
 // Заведение новой тетради (ТЗ §3.2): чистая часть — валидация и сборка
 // записей. Побочные эффекты (запись, редирект) остаются в server action,
@@ -43,4 +43,38 @@ export function buildNewNotebook(
   };
   notebook.versionIds.push(version.id);
   return { ok: true, notebook, version };
+}
+
+// --- Удаление прохода ---
+// Закон итерации прямо предлагает «отправьте депешу или удалите его» (§3.4);
+// удаление — выход из тупика ошибочного черновика. Завершённые проходы
+// не удаляются: диагноз получен, он часть истории тетради.
+
+export type RemovePassResult =
+  | { ok: true; notebooks: Notebook[]; passes: Pass[]; notebookId: string }
+  | { ok: false; error: string };
+
+export function removePass(
+  notebooks: Notebook[],
+  passes: Pass[],
+  passId: string,
+  now: string,
+): RemovePassResult {
+  const pass = passes.find((entry) => entry.id === passId);
+  if (pass === undefined) return { ok: false, error: "Проход не найден." };
+  if (pass.status === "completed") {
+    return { ok: false, error: "Диагноз уже получен — такой проход не удаляется." };
+  }
+
+  const nextPasses = passes.filter((entry) => entry.id !== passId);
+  const nextNotebooks = notebooks.flatMap((notebook) => {
+    if (notebook.id !== pass.notebookId) return [notebook];
+    const passIds = notebook.passIds.filter((id) => id !== passId);
+    // Тетрадь-призрак (изыскание/аудит без версий), оставшаяся пустой,
+    // уходит вместе с проходом.
+    if (notebook.versionIds.length === 0 && passIds.length === 0) return [];
+    return [{ ...notebook, passIds, updatedAt: now }];
+  });
+
+  return { ok: true, notebooks: nextNotebooks, passes: nextPasses, notebookId: pass.notebookId };
 }

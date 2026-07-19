@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { markDispatched, submitPassResponse, type ActionResult } from "../app/desk/actions";
+import { deletePass, markDispatched, submitPassResponse, type ActionResult } from "../app/desk/actions";
 import type { PassStatus } from "../lib/types";
 
 // BYOK-ритуал (ТЗ §6.1): передать депешу — вставить ответ.
@@ -20,6 +20,7 @@ export default function PassActions({
   lastParseFailed,
 }: PassActionsProps) {
   const [copied, setCopied] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [state, formAction, pending] = useActionState<ActionResult | undefined, FormData>(
     submitPassResponse,
     undefined,
@@ -67,6 +68,26 @@ export default function PassActions({
         <p className="error-note">
           Прошлый ответ не разобрался по формату — он сохранён целиком, можно вставить исправленный.
         </p>
+      )}
+      {!confirmingDelete ? (
+        <button
+          type="button"
+          className="delete-button"
+          onClick={() => setConfirmingDelete(true)}
+        >
+          Удалить проход
+        </button>
+      ) : (
+        <form action={deletePass} className="delete-confirm">
+          <input type="hidden" name="passId" value={passId} />
+          <span>Удалить без следа?</span>
+          <button type="submit" className="delete-button">
+            Да, удалить
+          </button>
+          <button type="button" className="delete-button" onClick={() => setConfirmingDelete(false)}>
+            Оставить
+          </button>
+        </form>
       )}
     </div>
   );

@@ -23,14 +23,15 @@ export default async function DeskPage() {
   const reminder = auditReminder(versions, lastAuditDate);
 
   const passById = new Map(passes.map((pass) => [pass.id, pass]));
-  // Тетради, состоящие из одних изысканий, живут в Кабинете, а не на Столе.
-  const isInquiryOnly = (notebook: (typeof notebooks)[number]): boolean =>
+  // Тетради, состоящие из одних изысканий и аудитов, живут в Кабинете, не на Столе.
+  const cabinetTypes = new Set(["inquiry", "audit"]);
+  const isCabinetOnly = (notebook: (typeof notebooks)[number]): boolean =>
     notebook.versionIds.length === 0 &&
     notebook.passIds.length > 0 &&
-    notebook.passIds.every((id) => passById.get(id)?.type === "inquiry");
+    notebook.passIds.every((id) => cabinetTypes.has(passById.get(id)?.type ?? ""));
 
   const active = notebooks
-    .filter((notebook) => notebook.shelvedAt === undefined && !isInquiryOnly(notebook))
+    .filter((notebook) => notebook.shelvedAt === undefined && !isCabinetOnly(notebook))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   const dispatchedByNotebook = new Map<string, number>();

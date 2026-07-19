@@ -602,6 +602,59 @@ a {
   margin: 0.15rem 0;
 }
 
+/* Удаление прохода: тихая кнопка, двухшаговое подтверждение — не модал */
+
+.delete-button {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  justify-self: start;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.delete-button:hover {
+  color: #8a3030;
+}
+
+.delete-confirm {
+  display: flex !important;
+  gap: 0.7rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* Восстановленный черновик */
+
+.draft-note {
+  color: var(--wait);
+  font-size: 0.88rem;
+  margin: 0 0 0.75rem;
+}
+
+.link-button {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Аудит на странице портрета */
+
+.audit-block p {
+  margin: 0 0 0.7rem;
+}
+
 /* Заведение новой тетради */
 
 .new-notebook {
