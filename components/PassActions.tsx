@@ -49,7 +49,11 @@ export default function PassActions({
         {copied ? "Депеша скопирована" : status === "draft" ? "Передать депешу" : "Скопировать ещё раз"}
       </button>
       <p className="pane-hint">
-        Вставьте депешу в claude.ai, а полученный ответ — сюда.
+        Вставьте депешу в{" "}
+        <a href="https://claude.ai/new" target="_blank" rel="noreferrer">
+          claude.ai
+        </a>
+        , а полученный ответ — сюда.
       </p>
       <form action={formAction}>
         <input type="hidden" name="passId" value={passId} />
