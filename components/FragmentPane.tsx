@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { commitVersion } from "../app/desk/actions";
 import { diffWords } from "../lib/diff";
+import { draftKey, shouldRestoreDraft } from "../lib/draft";
+import { textStats } from "../lib/textStats";
 
 // Окно текста — святое (ТЗ §5.1, §11.1). Текст в центре, редактируемый;
-// во время правки — никаких подсказок и подчёркиваний.
+// во время правки — никаких подсказок и подчёркиваний. Незафиксированная
+// правка автосохраняется в localStorage и переживает F5 и уход со страницы.
 
 export interface VersionView {
   id: string;
@@ -23,12 +26,50 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
   const [selectedId, setSelectedId] = useState<string | undefined>(latest?.id);
   const selected = versions.find((version) => version.id === selectedId);
   const [draft, setDraft] = useState<string>(selected?.text ?? "");
+  const [restored, setRestored] = useState(false);
 
   const changed = draft !== (latest?.text ?? "") && draft.trim() !== "";
+  const storageKey = draftKey(notebookId);
+
+  // При открытии — поднять пережившую обрыв правку из localStorage.
+  useEffect(() => {
+    const stored = window.localStorage.getItem(storageKey);
+    if (shouldRestoreDraft(stored, latest?.text)) {
+      setDraft(stored);
+      setRestored(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Каждая правка — в localStorage; совпадение с последней версией стирает черновик.
+  useEffect(() => {
+    if (draft === (latest?.text ?? "") || draft.trim() === "") {
+      window.localStorage.removeItem(storageKey);
+    } else {
+      window.localStorage.setItem(storageKey, draft);
+    }
+  }, [draft, storageKey, latest?.text]);
+
+  // Уход со страницы с незафиксированной правкой — предупредить.
+  useEffect(() => {
+    if (!changed) return;
+    function onBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [changed]);
 
   function selectVersion(version: VersionView) {
     setSelectedId(version.id);
     setDraft(version.text);
+    setRestored(false);
+  }
+
+  function discardRestored() {
+    window.localStorage.removeItem(storageKey);
+    setDraft(latest?.text ?? "");
+    setRestored(false);
   }
 
   return (
@@ -55,7 +96,16 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
 
       {selected !== undefined && <WasBecame versions={versions} selectedId={selected.id} />}
 
-      <form action={commitVersion}>
+      {restored && (
+        <p className="draft-note">
+          Восстановлена незафиксированная правка из этого браузера.{" "}
+          <button type="button" className="link-button" onClick={discardRestored}>
+            Отбросить и вернуться к последней версии
+          </button>
+        </p>
+      )}
+
+      <form action={commitVersion} onSubmit={() => window.localStorage.removeItem(storageKey)}>
         <input type="hidden" name="notebookId" value={notebookId} />
         <textarea
           className="fragment-text"
@@ -65,6 +115,12 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
           placeholder={versions.length === 0 ? "В этой тетради пока нет текста — начните здесь." : undefined}
           spellCheck={false}
         />
+        {draft.trim() !== "" && (
+          <p className="text-stats">
+            слов: {textStats(draft).words.toLocaleString("ru-RU")} · знаков:{" "}
+            {textStats(draft).chars.toLocaleString("ru-RU")}
+          </p>
+        )}
         {changed && (
           <div className="commit-bar">
             <input type="text" name="note" placeholder="Что изменилось?" autoComplete="off" />

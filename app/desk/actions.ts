@@ -4,8 +4,12 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { buildAuditMarkdown, collectAuditPairs, writeAuditFile } from "../../lib/audit";
 import { getCompass } from "../../lib/compasses";
 import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
+import { buildNewNotebook, removePass } from "../../lib/notebook";
+import { readLastAuditDate } from "../../lib/rituals";
 import {
   buildCompassPrompt,
   buildDryOutPrompt,
@@ -31,6 +35,33 @@ async function loadAll() {
 function refresh(notebookId: string): void {
   revalidatePath("/desk");
   revalidatePath(`/desk/${notebookId}`);
+}
+
+/**
+ * Завести новую тетрадь: название + первый текст фрагмента (ТЗ §3.2).
+ * Тетрадь рождается сразу с первой версией и уводит автора на свою страницу.
+ */
+export async function createNotebook(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const built = buildNewNotebook(
+    {
+      title: String(formData.get("title") ?? ""),
+      text: String(formData.get("text") ?? ""),
+    },
+    new Date().toISOString(),
+    randomUUID,
+  );
+  if (!built.ok) return { error: built.error };
+
+  const { notebooks, versions } = await loadAll();
+  versions.push(built.version);
+  notebooks.push(built.notebook);
+  await writeCollection("fragment-versions.json", versions);
+  await writeCollection("notebooks.json", notebooks);
+  revalidatePath("/desk");
+  redirect(`/desk/${built.notebook.id}`);
 }
 
 /**
@@ -159,6 +190,24 @@ export async function createPass(
   return {};
 }
 
+/**
+ * Удалить незавершённый проход — выход из тупика ошибочного черновика
+ * или депеши, которую некому отвечать. Завершённые не удаляются.
+ */
+export async function deletePass(formData: FormData): Promise<void> {
+  const passId = String(formData.get("passId") ?? "");
+  const { notebooks, passes } = await loadAll();
+  const result = removePass(notebooks, passes, passId, new Date().toISOString());
+  if (!result.ok) return;
+
+  await writeCollection("passes.json", result.passes);
+  await writeCollection("notebooks.json", result.notebooks);
+  refresh(result.notebookId);
+  revalidatePath("/study/inquiries");
+  revalidatePath("/study/voice");
+  revalidatePath("/study");
+}
+
 /** Депеша скопирована и понесена в ИИ — переводим проход в «отправлена». */
 export async function markDispatched(formData: FormData): Promise<void> {
   const passId = String(formData.get("passId") ?? "");
@@ -202,9 +251,69 @@ export async function submitPassResponse(
   pass.completedAt = new Date().toISOString();
   pass.lastParseFailed = false;
 
+  // Завершённый аудит становится файлом в learning/audits/ — он и есть
+  // новая «дата последнего аудита», напоминание на Столе гаснет само.
+  if (pass.type === "audit") {
+    const date = new Date(pass.completedAt);
+    pass.committedPath = await writeAuditFile(buildAuditMarkdown(parsed, date), date);
+    revalidatePath("/study/voice");
+    revalidatePath("/study");
+  }
+
   await writeCollection("passes.json", passes);
   refresh(pass.notebookId);
   return {};
+}
+
+/**
+ * Провести аудит корпуса (ТЗ §5.4): секретарь собирает депешу из пар
+ * «было ↔ стало», накопившихся с прошлого аудита. Один аудит за раз.
+ */
+export async function startAudit(): Promise<void> {
+  const { notebooks, passes, versions } = await loadAll();
+  if (passes.some((pass) => pass.type === "audit" && pass.status !== "completed")) return;
+
+  const lastAuditDate = await readLastAuditDate();
+  const pairs = collectAuditPairs(notebooks, versions, lastAuditDate);
+  if (pairs.length === 0) return;
+
+  let voiceCore: string | undefined;
+  try {
+    voiceCore = await fs.readFile(
+      path.join(process.cwd(), "learning", "AUTHOR-VOICE-CORE.md"),
+      "utf8",
+    );
+  } catch {
+    voiceCore = undefined;
+  }
+
+  const { buildAuditPrompt } = await import("../../lib/prompts");
+  const now = new Date().toISOString();
+  const title = `Аудит корпуса — ${now.slice(0, 10)}`;
+  const notebook: Notebook = {
+    id: `audit-${randomUUID().slice(0, 8)}`,
+    title,
+    createdAt: now,
+    updatedAt: now,
+    versionIds: [],
+    passIds: [],
+  };
+  const pass: Pass = {
+    id: randomUUID(),
+    type: "audit",
+    label: title,
+    notebookId: notebook.id,
+    promptText: buildAuditPrompt(pairs, voiceCore),
+    status: "draft",
+  };
+  notebook.passIds.push(pass.id);
+
+  notebooks.push(notebook);
+  passes.push(pass);
+  await writeCollection("notebooks.json", notebooks);
+  await writeCollection("passes.json", passes);
+  revalidatePath("/study/voice");
+  revalidatePath("/study");
 }
 
 // --- Действия Секретаря (Кабинет, ТЗ §5.3) ---

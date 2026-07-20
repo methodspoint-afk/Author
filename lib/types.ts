@@ -6,6 +6,7 @@ export type PassType =
   | "mentor-compass" // Проход по компасу (13 наставников)
   | "inquiry" // Изыскания
   | "digest" // Сводка
+  | "audit" // Аудит корпуса (LEARNING-LOOP)
   | "chekhov"; // legacy v1, заморожен (clean cutover)
 
 export type PassStatus = "draft" | "dispatched" | "completed";

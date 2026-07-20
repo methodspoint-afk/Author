@@ -602,6 +602,119 @@ a {
   margin: 0.15rem 0;
 }
 
+/* Удаление прохода: тихая кнопка, двухшаговое подтверждение — не модал */
+
+.delete-button {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  justify-self: start;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.delete-button:hover {
+  color: #8a3030;
+}
+
+.delete-confirm {
+  display: flex !important;
+  gap: 0.7rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* Счётчик объёма — тихая строка под окном текста */
+
+.text-stats {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  margin: 0.2rem 0 0;
+  text-align: right;
+}
+
+/* Адрес своей ИИ у депеши */
+
+.ai-link-edit input {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+  background: var(--paper);
+  min-width: 16rem;
+}
+
+/* Восстановленный черновик */
+
+.draft-note {
+  color: var(--wait);
+  font-size: 0.88rem;
+  margin: 0 0 0.75rem;
+}
+
+.link-button {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Аудит на странице портрета */
+
+.audit-block p {
+  margin: 0 0 0.7rem;
+}
+
+/* Заведение новой тетради */
+
+.new-notebook {
+  width: 100%;
+}
+
+.new-notebook > summary {
+  display: inline-block;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.new-notebook > summary::-webkit-details-marker {
+  display: none;
+}
+
+.new-notebook > summary:hover {
+  border-color: var(--accent);
+}
+
+.new-notebook[open] > summary {
+  margin-bottom: 0.8rem;
+}
+
+.new-notebook .lens-form {
+  max-width: 40rem;
+}
+
+.new-notebook textarea {
+  font-family: Georgia, "Times New Roman", serif;
+  min-height: 10rem;
+}
+
 /* Тихая строка секретаря (ТЗ §5.4): строка, не модал */
 
 .secretary-note {

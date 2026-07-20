@@ -15,8 +15,10 @@ export function auditThreshold(): number {
 }
 
 /**
- * Дата последнего аудита: из строки «Дата: YYYY-MM-DD» самого свежего
- * файла learning/audits/AUDIT-*.md, с фолбэком на месяц из имени файла.
+ * Дата последнего аудита: максимум по строкам «Дата: YYYY-MM-DD» всех файлов
+ * learning/audits/AUDIT-*.md (фолбэк — месяц из имени файла). Именно максимум
+ * по дате, не по имени: лексикографически «AUDIT-2026-07.md» больше
+ * «AUDIT-2026-07-19.md», и сортировка имён выбрала бы старый месячный файл.
  */
 export async function readLastAuditDate(rootDir: string = process.cwd()): Promise<string | undefined> {
   const dir = path.join(rootDir, "learning", "audits");
@@ -26,16 +28,19 @@ export async function readLastAuditDate(rootDir: string = process.cwd()): Promis
   } catch {
     return undefined;
   }
-  const audits = files.filter((file) => /^AUDIT-.*\.md$/u.test(file)).sort();
-  const latest = audits[audits.length - 1];
-  if (latest === undefined) return undefined;
 
-  const content = await fs.readFile(path.join(dir, latest), "utf8");
-  const dateLine = /Дата:\s*(\d{4}-\d{2}-\d{2})/u.exec(content);
-  if (dateLine?.[1] !== undefined) return dateLine[1];
-
-  const fromName = /AUDIT-(\d{4})-(\d{2})/u.exec(latest);
-  return fromName === null ? undefined : `${fromName[1]}-${fromName[2]}-01`;
+  let latest: string | undefined;
+  for (const file of files.filter((name) => /^AUDIT-.*\.md$/u.test(name))) {
+    const content = await fs.readFile(path.join(dir, file), "utf8");
+    const dateLine = /Дата:\s*(\d{4}-\d{2}-\d{2})/u.exec(content);
+    let date = dateLine?.[1];
+    if (date === undefined) {
+      const fromName = /AUDIT-(\d{4})-(\d{2})/u.exec(file);
+      date = fromName === null ? undefined : `${fromName[1]}-${fromName[2]}-01`;
+    }
+    if (date !== undefined && (latest === undefined || date > latest)) latest = date;
+  }
+  return latest;
 }
 
 /** Версии, зафиксированные строго после дня аудита (день аудита уже сверен). */
