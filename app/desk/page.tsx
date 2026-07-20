@@ -1,6 +1,7 @@
 import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import { getAllPasses, getNotebooks } from "../../lib/data";
+import { findPassToClose } from "../../lib/iteration";
 import { auditReminder, readLastAuditDate } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
 import type { FragmentVersion } from "../../lib/types";
@@ -76,6 +77,9 @@ export default async function DeskPage() {
                     <span className="tag-wait">
                       {waiting === 1 ? "депеша ждёт ответа" : `депеш ждут ответа: ${waiting}`}
                     </span>
+                  )}
+                  {findPassToClose(notebook, passes, versions) !== undefined && (
+                    <span className="tag-edit">диагноз получен — ждёт правки</span>
                   )}
                   {notebook.committedPath !== undefined && (
                     <span className="tag-committed">в картотеке</span>
