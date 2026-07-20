@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { commitVersion } from "../app/desk/actions";
 import { diffWords } from "../lib/diff";
 import { draftKey, shouldRestoreDraft } from "../lib/draft";
+import { formatDelta, pathMilestones, pathSummary } from "../lib/path";
 import { textStats } from "../lib/textStats";
 
 // Окно текста — святое (ТЗ §5.1, §11.1). Текст в центре, редактируемый;
@@ -14,6 +15,17 @@ export interface VersionView {
   id: string;
   text: string;
   note?: string;
+  createdAt?: string;
+}
+
+const versionDateFormat = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
+
+function versionDate(iso: string | undefined): string | undefined {
+  return iso === undefined ? undefined : versionDateFormat.format(new Date(iso));
 }
 
 interface FragmentPaneProps {
@@ -82,6 +94,7 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
               type="button"
               className="version-chip"
               data-active={version.id === selectedId}
+              title={versionDate(version.createdAt)}
               onClick={() => selectVersion(version)}
             >
               Версия {index + 1}
@@ -95,6 +108,8 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
       )}
 
       {selected !== undefined && <WasBecame versions={versions} selectedId={selected.id} />}
+
+      {versions.length > 1 && <FragmentPath versions={versions} />}
 
       {restored && (
         <p className="draft-note">
@@ -135,6 +150,68 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
         </p>
       )}
     </section>
+  );
+}
+
+/**
+ * «Путь фрагмента» (ТЗ §5.2, §13.5) — пэйофф итераций: весь пройденный путь,
+ * а не соседний шаг. Вехи с пометками автора и дифф первой ↔ последней версии.
+ */
+function FragmentPath({ versions }: { versions: VersionView[] }) {
+  const summary = pathSummary(versions);
+  const milestones = pathMilestones(versions);
+  const first = versions[0];
+  const latest = versions[versions.length - 1];
+  if (first === undefined || latest === undefined) return null;
+
+  const parts = diffWords(first.text, latest.text);
+
+  return (
+    <details className="path-block">
+      <summary>
+        Путь фрагмента{" "}
+        <span className="path-summary">
+          · версий: {summary.versions} · слов: {summary.firstWords} → {summary.lastWords}
+        </span>
+      </summary>
+
+      <ol className="path-milestones">
+        {milestones.map((milestone) => (
+          <li key={milestone.index}>
+            <span className="path-milestone-head">
+              Версия {milestone.index}
+              {versionDate(milestone.createdAt) !== undefined &&
+                ` — ${versionDate(milestone.createdAt)}`}
+              {" · "}
+              {milestone.words} сл.
+              {milestone.index > 1 && ` (${formatDelta(milestone.deltaWords)})`}
+            </span>
+            {milestone.note !== undefined && milestone.note !== "перенесено из v1" && (
+              <span className="path-milestone-note">{milestone.note}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+
+      <p className="path-diff-caption">Первая версия → последняя:</p>
+      {parts === undefined ? (
+        <p className="pane-hint">
+          Фрагмент слишком велик для пословного сравнения — путь рассказывают вехи выше.
+        </p>
+      ) : (
+        <p className="diff-text">
+          {parts.map((part, partIndex) =>
+            part.kind === "same" ? (
+              <span key={partIndex}>{part.text}</span>
+            ) : part.kind === "removed" ? (
+              <del key={partIndex}>{part.text}</del>
+            ) : (
+              <ins key={partIndex}>{part.text}</ins>
+            ),
+          )}
+        </p>
+      )}
+    </details>
   );
 }
 

@@ -76,6 +76,7 @@ export default async function NotebookPage({
           versions={versions.map((version) => ({
             id: version.id,
             text: version.text,
+            createdAt: version.createdAt,
             ...(version.note !== undefined && { note: version.note }),
           }))}
         />
