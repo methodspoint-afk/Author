@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { buildAuditMarkdown, collectAuditPairs, writeAuditFile } from "../../lib/audit";
 import { getCompass } from "../../lib/compasses";
 import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
-import { buildNewNotebook, removePass } from "../../lib/notebook";
+import { buildNewNotebook, cleanTitle, removeNotebook, removePass } from "../../lib/notebook";
 import { readLastAuditDate } from "../../lib/rituals";
 import {
   buildCompassPrompt,
@@ -188,6 +188,42 @@ export async function createPass(
   await writeCollection("notebooks.json", notebooks);
   refresh(notebookId);
   return {};
+}
+
+/** Переименовать тетрадь: поправить опечатку в названии. */
+export async function renameNotebook(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const title = cleanTitle(String(formData.get("title") ?? ""));
+  if (title === undefined) return { error: "Название не может быть пустым." };
+
+  const notebooks = await readCollection<Notebook>("notebooks.json");
+  const notebook = notebooks.find((entry) => entry.id === notebookId);
+  if (notebook === undefined) return { error: "Тетрадь не найдена." };
+  if (notebook.title === title) return {};
+
+  notebook.title = title;
+  notebook.updatedAt = new Date().toISOString();
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebookId);
+  return {};
+}
+
+/** Удалить тетрадь целиком — с её версиями и проходами. Уводит на Стол. */
+export async function deleteNotebook(formData: FormData): Promise<void> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const { notebooks, passes, versions } = await loadAll();
+  if (!notebooks.some((entry) => entry.id === notebookId)) return;
+
+  const next = removeNotebook(notebooks, versions, passes, notebookId);
+  await writeCollection("notebooks.json", next.notebooks);
+  await writeCollection("fragment-versions.json", next.versions);
+  await writeCollection("passes.json", next.passes);
+  revalidatePath("/desk");
+  revalidatePath("/study");
+  redirect("/desk");
 }
 
 /**

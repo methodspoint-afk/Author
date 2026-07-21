@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import FragmentPane from "../../../components/FragmentPane";
 import NewPassForm from "../../../components/NewPassForm";
+import NotebookControls from "../../../components/NotebookControls";
 import PassCard from "../../../components/PassCard";
 import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
@@ -69,6 +70,7 @@ export default async function NotebookPage({
           <span className="tag-committed">в картотеке: {notebook.committedPath}</span>
         )}
       </div>
+      <NotebookControls notebookId={notebook.id} title={notebook.title} />
       <div className="notebook-page">
         <FragmentPane
           key={versions.length}

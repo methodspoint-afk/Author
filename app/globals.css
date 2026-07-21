@@ -607,6 +607,33 @@ a {
   margin: 0.15rem 0;
 }
 
+/* Гигиена тетради: переименование инлайн, удаление в два шага */
+
+.notebook-controls {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+.rename-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rename-form input[type="text"] {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  background: var(--paper);
+  min-width: 16rem;
+}
+
 /* Карта наставников — все 13, задействованные ярко, будущие приглушены */
 
 .mentor-grid {
