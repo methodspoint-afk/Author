@@ -607,6 +607,74 @@ a {
   margin: 0.15rem 0;
 }
 
+/* Карта наставников — все 13, задействованные ярко, будущие приглушены */
+
+.mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.mentor-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+}
+
+.mentor-card[data-active="true"] {
+  border-color: var(--accent);
+}
+
+/* Будущие наставники: обозначены, но обесцвечены — витрина следующих версий. */
+.mentor-card[data-active="false"] {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.mentor-card h2 {
+  font-size: 1rem;
+  margin: 0 0 0.15rem;
+}
+
+.mentor-card[data-active="true"] h2 {
+  color: var(--accent);
+}
+
+.mentor-genre {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  margin: 0 0 0.7rem;
+}
+
+.mentor-fill {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.mentor-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: transparent;
+}
+
+.mentor-dot[data-filled="true"] {
+  background: var(--accent);
+}
+
+.mentor-note {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.mentor-soon {
+  font-style: italic;
+}
+
 /* Путь фрагмента — пэйофф итераций (ТЗ §5.2, §13.5) */
 
 .path-block {

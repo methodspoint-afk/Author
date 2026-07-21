@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ACTIVE_COMPASS_IDS, COMPASSES } from "../../lib/compasses";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { readDeltaTables } from "../../lib/deltas";
 
@@ -38,6 +39,13 @@ export default async function StudyPage() {
           <h2>Портрет голоса</h2>
           <p>
             Дельта-таблиц компасов: {deltas.length}. Как движется голос — по осям наставников.
+          </p>
+        </Link>
+        <Link href="/study/mentors" className="study-card">
+          <h2>Карта наставников</h2>
+          <p>
+            В деле {ACTIVE_COMPASS_IDS.length} из {COMPASSES.length} наставников. Кто уже открыт,
+            а кто ждёт следующих версий.
           </p>
         </Link>
         <Link href="/study/shelf" className="study-card">

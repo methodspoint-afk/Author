@@ -15,6 +15,15 @@ export interface CompassMeta {
   axes: CompassAxis[];
 }
 
+// Задействованные в этой версии наставники: у этих трёх файлы компасов
+// боевые (оси расписаны секциями диагностики), у остальных — каркас.
+// Карта наставников показывает всех 13; звать на проход можно только этих.
+export const ACTIVE_COMPASS_IDS = ["chekhov", "dovlatov", "sorkin"] as const;
+
+export function isCompassActive(id: string): boolean {
+  return (ACTIVE_COMPASS_IDS as readonly string[]).includes(id);
+}
+
 export const COMPASSES: CompassMeta[] = [
   {
     id: "chekhov",
@@ -216,3 +225,8 @@ export const COMPASSES: CompassMeta[] = [
 export function getCompass(id: string): CompassMeta | undefined {
   return COMPASSES.find((compass) => compass.id === id);
 }
+
+/** Наставники, задействованные в этой версии, — в порядке реестра. */
+export const ACTIVE_COMPASSES: CompassMeta[] = COMPASSES.filter((compass) =>
+  isCompassActive(compass.id),
+);
