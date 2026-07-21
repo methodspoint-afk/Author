@@ -112,7 +112,7 @@ export default function PassActions({
           rows={5}
         />
         <button type="submit" disabled={pending}>
-          {pending ? "Разбираю…" : "Вставить ответ"}
+          {pending ? "Разбираю…" : "Вставить ответ наставника"}
         </button>
       </form>
       {state?.error !== undefined && <p className="error-note">{state.error}</p>}

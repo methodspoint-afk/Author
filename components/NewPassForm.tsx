@@ -19,9 +19,10 @@ interface NewPassFormProps {
   reason?: string;
 }
 
+// Три линзы в одной форме (docs/СЛОВАРЬ.md): Не высушить · Сверить · Усилить.
 const LENSES = [
-  { type: "dry-out", label: "Не высушивать", hint: "за счёт чего фрагмент живёт" },
-  { type: "mentor-compass", label: "Проход по компасу", hint: "наставник + жанр" },
+  { type: "dry-out", label: "Не высушить", hint: "за счёт чего фрагмент живёт" },
+  { type: "mentor-compass", label: "Сверить", hint: "наставник + жанр" },
   { type: "strengthen", label: "Усилить", hint: "слабые места" },
 ] as const;
 
@@ -118,7 +119,7 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
           </label>
 
           <button type="submit" disabled={pending}>
-            {pending ? "Собираю депешу…" : "Собрать депешу"}
+            {pending ? "Собираю депешу…" : "Депеша наставнику"}
           </button>
           {state?.error !== undefined && <p className="error-note">{state.error}</p>}
         </form>

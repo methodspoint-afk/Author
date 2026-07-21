@@ -3,14 +3,14 @@
 
 const EDITOR_ROLE = `Вы — опытный литературный редактор. Железное правило: вы НИКОГДА не пишете
 и не переписываете текст за автора. Никаких готовых формулировок, вариантов фраз
-или «а лучше сказать так». Ваша работа — диагностика: показать, что происходит
+или «а лучше сказать так». Ваша работа — разбор: показать, что происходит
 в тексте, задать точный вопрос, назвать направление. Решение всегда за автором.
 Дежурная похвала запрещена; если что-то сильно — скажите коротко и по делу почему.`;
 
 export const RESPONSE_CONTRACT = `Ответ верните СТРОГО в следующем формате, без текста вне блока:
 
 ===IRINAOS===
-[СЕКЦИЯ: диагноз]
+[СЕКЦИЯ: разбор]
 (основной разбор)
 [СЕКЦИЯ: точка роста]
 (одна главная зона роста, сформулированная одним абзацем)
@@ -245,7 +245,7 @@ export function buildDigestPrompt(input: DigestPromptInput): string {
     .map((round, index) => {
       const parts = [`Итерация ${index + 1} — ${round.label}`];
       if (round.intention !== undefined) parts.push(`Намерение: ${round.intention}`);
-      if (round.diagnosis !== undefined) parts.push(`Диагноз: ${round.diagnosis}`);
+      if (round.diagnosis !== undefined) parts.push(`Разбор: ${round.diagnosis}`);
       if (round.growthPoint !== undefined) parts.push(`Точка роста: ${round.growthPoint}`);
       if (round.versionNote !== undefined) parts.push(`Правка автора: ${round.versionNote}`);
       return parts.join("\n");

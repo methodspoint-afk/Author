@@ -139,7 +139,7 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
         {changed && (
           <div className="commit-bar">
             <input type="text" name="note" placeholder="Что изменилось?" autoComplete="off" />
-            <button type="submit">Зафиксировать версию</button>
+            <button type="submit">Положить в тетрадь</button>
           </div>
         )}
       </form>

@@ -46,11 +46,16 @@ export default async function DeskPage() {
   return (
     <>
       <h1>Стол</h1>
+      <p className="masthead-motto">
+        У каждого писателя должен быть большой стол и вместительный кабинет — это их
+        электронная версия. Каждый большой писатель начинал с маленькой тетради: пишите так,
+        как хотите и умеете, — начать можно прямо сейчас.
+      </p>
       {reminder.due ? (
         <p className="secretary-note">
           Секретарь: с последнего аудита накопилось {reminder.count}{" "}
           {plural(reminder.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}{" "}
-          — пора сверить <Link href="/study/voice">портрет голоса</Link>.
+          — пора сверить <Link href="/study/voice">голос</Link>.
         </p>
       ) : (
         rhythm.due && (
@@ -87,7 +92,7 @@ export default async function DeskPage() {
                     </span>
                   )}
                   {findPassToClose(notebook, passes, versions) !== undefined && (
-                    <span className="tag-edit">диагноз получен — ждёт правки</span>
+                    <span className="tag-edit">разбор получен — ждёт правки</span>
                   )}
                   {notebook.committedPath !== undefined && (
                     <span className="tag-committed">в картотеке</span>
