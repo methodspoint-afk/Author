@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import FragmentPane from "../../../components/FragmentPane";
 import NewPassForm from "../../../components/NewPassForm";
 import PassCard from "../../../components/PassCard";
-import { COMPASSES } from "../../../lib/compasses";
+import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
 import { readCollection } from "../../../lib/storage";
@@ -83,7 +83,7 @@ export default async function NotebookPage({
         <aside>
           <NewPassForm
             notebookId={notebook.id}
-            compasses={COMPASSES.map(({ id, title, nativeGenre, axes }) => ({
+            compasses={ACTIVE_COMPASSES.map(({ id, title, nativeGenre, axes }) => ({
               id,
               title,
               nativeGenre,
