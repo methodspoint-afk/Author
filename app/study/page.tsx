@@ -24,7 +24,7 @@ export default async function StudyPage() {
         <Link href="/study/card-index" className="study-card">
           <h2>Картотека</h2>
           <p>
-            Внесённых тетрадей: {committed}. Корпус — материал для аудита и портрета голоса.
+            Внесённых тетрадей: {committed}. Корпус — материал для аудита и голоса.
           </p>
         </Link>
         <Link href="/study/inquiries" className="study-card">
@@ -32,13 +32,13 @@ export default async function StudyPage() {
           <p>
             Справок: {inquiries.length}
             {waitingInquiries > 0 && ` (в работе: ${waitingInquiries})`}. Секретарь наводит справки
-            по запросу и по следам диагнозов.
+            по запросу и по следам разборов.
           </p>
         </Link>
         <Link href="/study/voice" className="study-card">
-          <h2>Портрет голоса</h2>
+          <h2>Голос</h2>
           <p>
-            Дельта-таблиц компасов: {deltas.length}. Как движется голос — по осям наставников.
+            Дельт наставников: {deltas.length}. Как движется голос — по осям наставников.
           </p>
         </Link>
         <Link href="/study/mentors" className="study-card">

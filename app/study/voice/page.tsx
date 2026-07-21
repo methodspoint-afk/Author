@@ -56,7 +56,7 @@ export default async function VoicePage() {
 
   return (
     <>
-      <h1>Портрет голоса</h1>
+      <h1>Голос</h1>
       <p className="empty-note">
         Портрет — качественный, не численный: словами и примерами, не графиками. Данные живут в
         markdown-файлах (learning/), эта страница их только показывает.
@@ -99,9 +99,9 @@ export default async function VoicePage() {
         </p>
       )}
 
-      <h2>Дельты компасов</h2>
+      <h2>Дельты наставников</h2>
       {deltas.length === 0 ? (
-        <p className="empty-note">Ни в одном файле компаса пока нет дельта-таблицы.</p>
+        <p className="empty-note">Ни у одного наставника пока нет дельта-таблицы.</p>
       ) : (
         deltas.map(({ compass, header, rows }) => (
           <details key={compass.id} className="delta-block" open={rows.some((row) => (row[1] ?? "") !== "")}>

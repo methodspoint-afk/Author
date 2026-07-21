@@ -138,13 +138,13 @@ export async function createPass(
 
   if (type === "dry-out") {
     promptText = buildDryOutPrompt(base);
-    label = "Не высушивать";
+    label = "Не высушить";
   } else if (type === "strengthen") {
     promptText = buildStrengthenPrompt(base);
     label = "Усилить";
   } else if (type === "mentor-compass") {
     const compass = getCompass(compassId);
-    if (compass === undefined) return { error: "Выберите компас-наставник." };
+    if (compass === undefined) return { error: "Выберите наставника." };
     let compassKnowledge: string;
     try {
       compassKnowledge = await fs.readFile(
@@ -161,7 +161,7 @@ export async function createPass(
       nativeGenre: compass.nativeGenre,
       ...(targetGenre !== "" && { targetGenre }),
     });
-    label = `Компас: ${compass.title}`;
+    label = `Наставник: ${compass.title}`;
     passExtras.compassId = compass.id;
     if (targetGenre !== "") passExtras.targetGenreId = targetGenre;
   } else {
@@ -475,7 +475,9 @@ export async function createDigest(formData: FormData): Promise<void> {
       return {
         label: pass.label,
         ...(pass.intention !== undefined && { intention: pass.intention }),
-        ...(parsed?.["диагноз"] !== undefined && { diagnosis: parsed["диагноз"] }),
+        ...((parsed?.["разбор"] ?? parsed?.["диагноз"]) !== undefined && {
+          diagnosis: (parsed?.["разбор"] ?? parsed?.["диагноз"]) as string,
+        }),
         ...(parsed?.["точка роста"] !== undefined && { growthPoint: parsed["точка роста"] }),
         ...(closingVersion?.note !== undefined && { versionNote: closingVersion.note }),
       };

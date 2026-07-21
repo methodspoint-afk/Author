@@ -1,15 +1,33 @@
-/* Тон интерфейса (ТЗ §5.5): тихо, точно, текст — герой. */
+/* Дизайн-система «Стол и Кабинет» (источник правды — docs/design/stol-proba-4.html).
+   Тон §5.5: тихо, точно, текст — герой. Слова — только из docs/СЛОВАРЬ.md,
+   цвета — только из токенов ниже. */
 
 :root {
-  --ink: #1c1a17;
-  --ink-soft: #6b655d;
-  --paper: #faf8f4;
-  --card: #ffffff;
-  --line: #e4ded4;
-  --accent: #7a5c3e;
-  --accent-soft: #f1e9dd;
-  --ok: #3d6b4f;
-  --wait: #8a6d2f;
+  /* палитра: средний беж, чернила горького шоколада, бирюза, карамель */
+  --paper: #f1e8d2;        /* фон страницы */
+  --surface: #faf5e8;      /* окна и поля ввода */
+  --card: #f6efdd;         /* карточки */
+  --ink: #2b2416;          /* текст — горький шоколад */
+  --ink-soft: #7c6f52;     /* приглушённый */
+  --line: #cfc09a;         /* линии */
+  --accent: #0e6f68;       /* бирюза — главный акцент */
+  --accent-ink: #faf5e8;   /* текст на бирюзе */
+  --accent-soft: #e2ead9;  /* светлая бирюза-беж для активных состояний */
+  --gold: #b98a2e;         /* карамель */
+  --ok: #2e7d44;           /* завершено (зелёный) */
+  --wait: #b98a2e;         /* ждёт (карамель) */
+  --chrome: #221c10;       /* «чердак» — тёмная полоса шапки */
+  --chrome-ink: #ece5d2;   /* текст на чердаке */
+  /* статусы: серый · золото · синий · коричневый · зелёный — не спутать издалека */
+  --st-draft: #8f8776;
+  --st-mentor: #d9a406;
+  --st-edit: #2e5fbf;
+  --st-audit: #7a4a1f;
+  --st-done: #2e7d44;
+  /* шрифты */
+  --serif: Georgia, "Times New Roman", serif;  /* заголовки */
+  --book: "Times New Roman", Georgia, serif;    /* текст фрагмента */
+  --btn: "Courier New", Courier, monospace;     /* кнопки и метки */
 }
 
 * {
@@ -20,42 +38,99 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--serif);
   font-size: 16px;
   line-height: 1.55;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* «Чердак» — тёмная полоса шапки, всегда сверху */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   align-items: baseline;
   gap: 2rem;
-  padding: 0.9rem 2rem;
-  border-bottom: 1px solid var(--line);
-  background: var(--card);
+  padding: 0.85rem 2rem;
+  background: var(--chrome);
+  color: var(--chrome-ink);
 }
 
 .brand {
+  font-family: var(--serif);
   font-weight: 650;
-  letter-spacing: 0.02em;
-  color: var(--ink);
+  letter-spacing: 0.03em;
+  color: var(--chrome-ink);
   text-decoration: none;
 }
 
 .nav {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  font-family: var(--btn);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
+/* Кнопки навигации: текст почти белый, под ним карамельная полоска;
+   при наведении полоска становится бирюзовой, буквы — тёплая сепия. */
 .nav a {
-  color: var(--ink);
+  color: var(--chrome-ink);
   text-decoration: none;
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 2px;
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 3px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.nav a:hover {
+  color: #d9c9a3;
+  border-bottom-color: var(--accent);
 }
 
 .nav-soon {
-  color: var(--ink-soft);
+  color: #a99e83;
   cursor: default;
+}
+
+/* Кнопки и метки — курьер (машинописный тон прототипа) */
+button {
+  font-family: var(--btn);
+  letter-spacing: 0.03em;
+}
+
+/* Вводный текст Стола */
+.masthead-motto {
+  max-width: 62ch;
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+  margin: -0.5rem 0 1.5rem;
+}
+
+/* Подвал — «Письмо мастеру» */
+.bottombar {
+  display: flex;
+  justify-content: center;
+  gap: 1.6rem;
+  margin-top: 3rem;
+  padding: 1.4rem 1rem 2rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--btn);
+  font-size: 0.82rem;
+}
+
+.bottombar a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.bottombar a:hover {
+  border-bottom-color: var(--accent);
 }
 
 .page {
@@ -532,7 +607,7 @@ a {
   margin-top: 0;
 }
 
-/* Портрет голоса */
+/* Голос */
 
 .voice-core pre,
 .delta-block pre {

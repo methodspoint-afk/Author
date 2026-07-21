@@ -15,7 +15,7 @@ const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
 export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpen: boolean }) {
   const title =
     pass.type === "mentor-compass" && pass.compassId !== undefined
-      ? `Компас: ${COMPASS_TITLES[pass.compassId] ?? pass.compassId}`
+      ? `Наставник: ${COMPASS_TITLES[pass.compassId] ?? pass.compassId}`
       : PASS_TYPE_LABELS[pass.type];
 
   const parsed = Array.isArray(pass.parsedResult) ? pass.parsedResult[0] : pass.parsedResult;
@@ -43,7 +43,7 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
         </details>
         {pass.parsedResult !== undefined && (
           <details open={pass.status === "completed"}>
-            <summary>{pass.type === "inquiry" ? "Справка" : "Диагноз"}</summary>
+            <summary>{pass.type === "inquiry" ? "Справка" : "Разбор"}</summary>
             <ParsedResult result={pass.parsedResult} />
           </details>
         )}

@@ -2,10 +2,11 @@ import type { PassStatus, PassType } from "./types";
 
 // Словарь системы (ТЗ §2): интерфейс говорит одним языком, без канцелярита.
 
+// Слова — из docs/СЛОВАРЬ.md. Линзы в одной форме: Не высушить / Сверить / Усилить.
 export const PASS_TYPE_LABELS: Record<PassType, string> = {
-  "dry-out": "Не высушивать",
+  "dry-out": "Не высушить",
   strengthen: "Усилить",
-  "mentor-compass": "Проход по компасу",
+  "mentor-compass": "Сверить",
   inquiry: "Изыскание",
   digest: "Сводка",
   audit: "Аудит корпуса",
@@ -14,8 +15,8 @@ export const PASS_TYPE_LABELS: Record<PassType, string> = {
 
 export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
   draft: "черновик",
-  dispatched: "депеша отправлена",
-  completed: "диагноз получен",
+  dispatched: "у наставника",
+  completed: "разбор получен",
 };
 
 // Временная карта названий для отображения; полный реестр CompassMeta
