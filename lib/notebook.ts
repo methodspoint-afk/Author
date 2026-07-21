@@ -78,3 +78,34 @@ export function removePass(
 
   return { ok: true, notebooks: nextNotebooks, passes: nextPasses, notebookId: pass.notebookId };
 }
+
+// --- Переименование и удаление тетради ---
+
+/** Чистое имя тетради: обрезанное и непустое, иначе undefined. */
+export function cleanTitle(raw: string): string | undefined {
+  const title = raw.trim();
+  return title === "" ? undefined : title;
+}
+
+export interface RemoveNotebookResult {
+  notebooks: Notebook[];
+  versions: FragmentVersion[];
+  passes: Pass[];
+}
+
+/**
+ * Удаление тетради вместе с её версиями и проходами. Файл кейса в картотеке
+ * (learning/corpus/) — отдельный зафиксированный артефакт, его не трогаем.
+ */
+export function removeNotebook(
+  notebooks: Notebook[],
+  versions: FragmentVersion[],
+  passes: Pass[],
+  notebookId: string,
+): RemoveNotebookResult {
+  return {
+    notebooks: notebooks.filter((notebook) => notebook.id !== notebookId),
+    versions: versions.filter((version) => version.notebookId !== notebookId),
+    passes: passes.filter((pass) => pass.notebookId !== notebookId),
+  };
+}
