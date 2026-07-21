@@ -66,3 +66,39 @@ export function auditReminder(
   const count = countVersionsSince(versions, sinceDate);
   return { due: count >= threshold, count, threshold };
 }
+
+// Констатация ритма (ТЗ §5.5): секретарь фактом, не похвалой, отмечает темп
+// работы за скользящее окно. Правкой считается версия, кроме первой в тетради
+// (первая версия — начало, а не правка). Строка появляется от порога — редко
+// и потому не приедается.
+
+export interface WorkRhythm {
+  due: boolean;
+  count: number;
+  windowDays: number;
+}
+
+export function workRhythm(
+  versions: FragmentVersion[],
+  now: Date = new Date(),
+  windowDays = 30,
+  threshold = 5,
+): WorkRhythm {
+  // Первая версия каждой тетради — не правка: отбрасываем самую раннюю в группе.
+  const firstByNotebook = new Map<string, string>();
+  for (const version of versions) {
+    const current = firstByNotebook.get(version.notebookId);
+    if (current === undefined || version.createdAt < current) {
+      firstByNotebook.set(version.notebookId, version.createdAt);
+    }
+  }
+
+  const since = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+  const count = versions.filter(
+    (version) =>
+      version.createdAt !== firstByNotebook.get(version.notebookId) &&
+      version.createdAt >= since,
+  ).length;
+
+  return { due: count >= threshold, count, windowDays };
+}

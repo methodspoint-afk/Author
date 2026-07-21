@@ -2,7 +2,7 @@ import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { findPassToClose } from "../../lib/iteration";
-import { auditReminder, readLastAuditDate } from "../../lib/rituals";
+import { auditReminder, readLastAuditDate, workRhythm } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
 import type { FragmentVersion } from "../../lib/types";
 
@@ -22,6 +22,7 @@ export default async function DeskPage() {
     readLastAuditDate(),
   ]);
   const reminder = auditReminder(versions, lastAuditDate);
+  const rhythm = workRhythm(versions);
 
   const passById = new Map(passes.map((pass) => [pass.id, pass]));
   // Тетради, состоящие из одних изысканий и аудитов, живут в Кабинете, не на Столе.
@@ -45,12 +46,19 @@ export default async function DeskPage() {
   return (
     <>
       <h1>Стол</h1>
-      {reminder.due && (
+      {reminder.due ? (
         <p className="secretary-note">
           Секретарь: с последнего аудита накопилось {reminder.count}{" "}
           {plural(reminder.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}{" "}
           — пора сверить <Link href="/study/voice">портрет голоса</Link>.
         </p>
+      ) : (
+        rhythm.due && (
+          <p className="secretary-note">
+            Секретарь: за последние {rhythm.windowDays} дней — {rhythm.count}{" "}
+            {plural(rhythm.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}.
+          </p>
+        )
       )}
       <div className="notebook-toolbar">
         <NewNotebookForm />
