@@ -2,7 +2,7 @@ import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { findPassToClose } from "../../lib/iteration";
-import { auditReminder, readLastAuditDate, workRhythm } from "../../lib/rituals";
+import { auditReminder, lastVoiceCheckDate, laterDate, readLastAuditDate, workRhythm } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
 import type { FragmentVersion } from "../../lib/types";
 
@@ -21,7 +21,8 @@ export default async function DeskPage() {
     readCollection<FragmentVersion>("fragment-versions.json"),
     readLastAuditDate(),
   ]);
-  const reminder = auditReminder(versions, lastAuditDate);
+  const lastCheck = laterDate(lastAuditDate, lastVoiceCheckDate(passes));
+  const reminder = auditReminder(versions, lastCheck);
   const rhythm = workRhythm(versions);
 
   const passById = new Map(passes.map((pass) => [pass.id, pass]));
@@ -54,7 +55,7 @@ export default async function DeskPage() {
       </p>
       {reminder.due ? (
         <p className="secretary-note">
-          Секретарь: с последнего аудита накопилось {reminder.count}{" "}
+          Секретарь: с последней сверки накопилось {reminder.count}{" "}
           {plural(reminder.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}{" "}
           — пора сверить <Link href="/study/voice">голос</Link>.
         </p>
