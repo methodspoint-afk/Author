@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import Link from "next/link";
 import PassCard from "../../../components/PassCard";
 import { collectAuditPairs } from "../../../lib/audit";
 import { getAllPasses, getNotebooks } from "../../../lib/data";
@@ -56,6 +57,9 @@ export default async function VoicePage() {
 
   return (
     <>
+      <p className="back-link">
+        <Link href="/study">← Кабинет</Link>
+      </p>
       <h1>Голос</h1>
       <p className="empty-note">
         Портрет — качественный, не численный: словами и примерами, не графиками. Данные живут в

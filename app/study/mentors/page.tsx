@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ACTIVE_COMPASS_IDS, COMPASSES, isCompassActive } from "../../../lib/compasses";
 import { getAllPasses } from "../../../lib/data";
 import { mentorEngagement } from "../../../lib/mentors";
@@ -25,6 +26,9 @@ export default async function MentorsPage() {
 
   return (
     <>
+      <p className="back-link">
+        <Link href="/study">← Кабинет</Link>
+      </p>
       <h1>Карта наставников</h1>
       <p className="empty-note">
         В этой версии в деле {ACTIVE_COMPASS_IDS.length} наставника из {COMPASSES.length}.

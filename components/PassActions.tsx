@@ -51,8 +51,8 @@ export default function PassActions({
     try {
       await navigator.clipboard.writeText(promptText);
     } catch {
-      // Буфер недоступен (например, http без https) — текст депеши
-      // всё равно виден в свёрнутом блоке выше, можно скопировать руками.
+      // Буфер недоступен (например, http без https) — тихо игнорируем;
+      // промпт пользователю не показываем (он «упакован»).
     }
     setCopied(true);
     if (status === "draft") {
@@ -108,7 +108,7 @@ export default function PassActions({
         <textarea
           name="rawResponse"
           className="response-input"
-          placeholder="Ответ из claude.ai…"
+          placeholder="Ответ от вашего ИИ-сервиса…"
           rows={5}
         />
         <button type="submit" disabled={pending}>

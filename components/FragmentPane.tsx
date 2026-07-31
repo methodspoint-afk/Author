@@ -103,14 +103,6 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
         </div>
       )}
 
-      {selected?.note !== undefined && selected.note !== "перенесено из v1" && (
-        <p className="version-note">Что изменилось: {selected.note}</p>
-      )}
-
-      {selected !== undefined && <WasBecame versions={versions} selectedId={selected.id} />}
-
-      {versions.length > 1 && <FragmentPath versions={versions} />}
-
       {restored && (
         <p className="draft-note">
           Восстановлена незафиксированная правка из этого браузера.{" "}
@@ -120,6 +112,7 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
         </p>
       )}
 
+      {/* Окно текста — герой: правишь ту версию, что видишь, счётчик под ней. */}
       <form action={commitVersion} onSubmit={() => window.localStorage.removeItem(storageKey)}>
         <input type="hidden" name="notebookId" value={notebookId} />
         <textarea
@@ -138,7 +131,12 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
         )}
         {changed && (
           <div className="commit-bar">
-            <input type="text" name="note" placeholder="Что изменилось?" autoComplete="off" />
+            <input
+              type="text"
+              name="note"
+              placeholder="Кратко: что изменили? (например: расширила сцену в ресторане)"
+              autoComplete="off"
+            />
             <button type="submit">Положить в тетрадь</button>
           </div>
         )}
@@ -146,9 +144,18 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
 
       {!changed && versions.length > 0 && (
         <p className="pane-hint">
-          Правьте текст прямо здесь. Как только он изменится, появится кнопка фиксации версии.
+          Правьте текст прямо здесь. Как только он изменится, появится кнопка «Положить в тетрадь».
         </p>
       )}
+
+      {/* Вспомогательное — под окном, свёрнуто: что изменилось, было→стало, путь. */}
+      {selected?.note !== undefined && selected.note !== "перенесено из v1" && (
+        <p className="version-note">Что изменилось: {selected.note}</p>
+      )}
+
+      {selected !== undefined && <WasBecame versions={versions} selectedId={selected.id} />}
+
+      {versions.length > 1 && <FragmentPath versions={versions} />}
     </section>
   );
 }

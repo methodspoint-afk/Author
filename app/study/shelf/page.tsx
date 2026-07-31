@@ -12,6 +12,9 @@ export default async function ShelfPage() {
 
   return (
     <>
+      <p className="back-link">
+        <Link href="/study">← Кабинет</Link>
+      </p>
       <h1>Полка</h1>
       {shelved.length === 0 ? (
         <p className="empty-note">Полка пуста — всё в работе.</p>

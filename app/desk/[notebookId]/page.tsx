@@ -67,7 +67,7 @@ export default async function NotebookPage({
           </form>
         )}
         {notebook.committedPath !== undefined && (
-          <span className="tag-committed">в картотеке: {notebook.committedPath}</span>
+          <span className="tag-committed">в картотеке</span>
         )}
       </div>
       <NotebookControls notebookId={notebook.id} title={notebook.title} />
