@@ -19,6 +19,14 @@ export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
   completed: "разбор получен",
 };
 
+// Изыскание — не проход по наставнику, а научная справка. Слово «наставник»
+// тут неуместно: запрос уходит не мастеру, а возвращается справкой (СЛОВАРЬ.md).
+export const PASS_STATUS_LABELS_INQUIRY: Record<PassStatus, string> = {
+  draft: "черновик",
+  dispatched: "запрос отправлен",
+  completed: "справка получена",
+};
+
 // Временная карта названий для отображения; полный реестр CompassMeta
 // с осями появится в lib/compasses.ts на шаге 6 дорожной карты.
 export const COMPASS_TITLES: Record<string, string> = {

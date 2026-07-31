@@ -11,6 +11,7 @@ interface PassActionsProps {
   passId: string;
   status: PassStatus;
   promptText: string;
+  isInquiry?: boolean;
   lastParseFailed?: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function PassActions({
   passId,
   status,
   promptText,
+  isInquiry,
   lastParseFailed,
 }: PassActionsProps) {
   const [copied, setCopied] = useState(false);
@@ -112,7 +114,7 @@ export default function PassActions({
           rows={5}
         />
         <button type="submit" disabled={pending}>
-          {pending ? "Разбираю…" : "Вставить ответ наставника"}
+          {pending ? "Разбираю…" : isInquiry ? "Вставить ответ" : "Вставить ответ наставника"}
         </button>
       </form>
       {state?.error !== undefined && <p className="error-note">{state.error}</p>}
