@@ -4,27 +4,7 @@
 
 ## В РАБОТЕ
 
-- **Задача:** Экспорт тетради в Word и PDF (и TXT). Без тяжёлых зависимостей
-  (чтобы у автора `git pull` + `npm run dev` работал без `npm install`):
-  Word — через RTF (Word открывает нативно, кириллица через \u), PDF — через
-  печать браузера («Сохранить как PDF»), TXT — простой текст.
-- **План:**
-  1. `lib/export.ts`: `buildManuscript(notebook, versions)` (заголовок +
-     финальный текст), `toPlainText`, `toRtf` (эскейп + кириллица), `safeFileName`.
-  2. Роут `app/desk/[notebookId]/export/route.ts` (GET ?format=rtf|txt) —
-     отдаёт файл с Content-Disposition (кириллическое имя через filename*).
-  3. Печатная страница `app/desk/[notebookId]/print/page.tsx` — чистый
-     манускрипт + кнопка «Сохранить как PDF» (window.print); print-CSS прячет
-     шапку/подвал.
-  4. На странице тетради — блок «Экспорт»: Word (.rtf), PDF (печать), TXT.
-  5. CSS манускрипта + @media print; словарь; тесты на lib/export.
-- **Файлы:** lib/export.ts (новый), app/desk/[notebookId]/export/route.ts
-  (новый), app/desk/[notebookId]/print/page.tsx (новый),
-  app/desk/[notebookId]/page.tsx, app/globals.css, docs/СЛОВАРЬ.md,
-  tests/export.test.ts (новый).
-- **Критерий готовности:** со страницы тетради скачивается .rtf (открывается
-  в Word, кириллица цела) и .txt; кнопка PDF открывает печать. Картотека/Полка
-  ведут на тетрадь → экспорт в клик. Зелёное, PR → main.
+*(Пусто. Активной незавершённой задачи нет.)*
 
 <!--
   Когда начинается задача разработки, заглушка выше заменяется блоком:
@@ -38,6 +18,19 @@
 -->
 
 ## Журнал выполненных задач
+
+- **2026-07-31** — Экспорт тетради: Word · PDF · TXT. На странице тетради блок
+  «Забрать текст» (реачабелен из Картотеки/Полки — они ведут на тетрадь).
+  Экспортируется чистовик (заголовок + финальная версия). Без тяжёлых
+  зависимостей, чтобы у автора `git pull` + `npm run dev` работал без
+  `npm install`: Word — RTF (Word открывает нативно, кириллица через
+  \u-эскейпы, `ansicpg1251`), TXT — простой UTF-8, PDF — печать браузера
+  («Сохранить как PDF»). Новое: `lib/export.ts` (buildManuscript, toPlainText,
+  toRtf, safeFileName), роут `app/desk/[id]/export/route.ts` (GET
+  ?format=rtf|txt, Content-Disposition с filename* для кириллицы), печатная
+  страница `app/desk/[id]/print/page.tsx` + `components/PrintButton.tsx`,
+  print-CSS прячет шапку/подвал/панель. 80 тестов (было 72, +8), прод-сборка,
+  живая проверка (RTF-заголовки, кириллица в \u, печатный вид) — зелёные.
 
 - **2026-07-31** — Заведён журнал версий `docs/ВЕРСИИ.md` — живой рабочий
   чертёж отличий 1.0 ↔ 2.0 ↔ 3.0: таблица-обзор + подробные заметки «как это

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import FragmentPane from "../../../components/FragmentPane";
 import NewPassForm from "../../../components/NewPassForm";
 import NotebookControls from "../../../components/NotebookControls";
@@ -70,6 +71,18 @@ export default async function NotebookPage({
         {notebook.committedPath !== undefined && (
           <span className="tag-committed">в картотеке</span>
         )}
+      </div>
+      <div className="export-bar">
+        <span className="export-label">Забрать текст:</span>
+        <a className="export-link" href={`/desk/${notebook.id}/export?format=rtf`}>
+          Word
+        </a>
+        <Link className="export-link" href={`/desk/${notebook.id}/print`}>
+          PDF
+        </Link>
+        <a className="export-link" href={`/desk/${notebook.id}/export?format=txt`}>
+          TXT
+        </a>
       </div>
       <NotebookControls notebookId={notebook.id} title={notebook.title} />
       <div className="notebook-page">

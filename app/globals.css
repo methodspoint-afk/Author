@@ -593,6 +593,67 @@ a {
   cursor: progress;
 }
 
+/* Экспорт тетради: забрать текст в Word / PDF / TXT */
+.export-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.85rem;
+}
+.export-label {
+  color: var(--ink-soft);
+  font-family: var(--btn);
+}
+.export-link {
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.2rem 0.7rem;
+  font-family: var(--btn);
+}
+.export-link:hover {
+  border-color: var(--accent);
+}
+
+/* Печатный вид чистовика + сохранение в PDF печатью браузера */
+.print-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.print-controls a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.manuscript {
+  max-width: 42rem;
+}
+.manuscript h1 {
+  margin-bottom: 1.5rem;
+}
+.manuscript p {
+  white-space: pre-wrap;
+  margin: 0 0 1rem;
+  line-height: 1.7;
+}
+@media print {
+  .topbar,
+  .bottombar,
+  .print-controls {
+    display: none;
+  }
+  .page {
+    padding: 0;
+  }
+  .manuscript {
+    max-width: none;
+  }
+}
+
 /* Кнопка-действие с откликом: форма-обёртка держит кнопку и галочку в ряд. */
 .toolbar-action {
   display: inline-flex;
