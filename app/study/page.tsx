@@ -38,19 +38,23 @@ export default async function StudyPage() {
         <Link href="/study/voice" className="study-card">
           <h2>Голос</h2>
           <p>
-            Дельт наставников: {deltas.length}. Как движется голос — по осям наставников.
+            Портрет вашего стиля: сверка голоса и подтверждённые механики.
           </p>
         </Link>
         <Link href="/study/mentors" className="study-card">
           <h2>Карта наставников</h2>
           <p>
-            В деле {ACTIVE_COMPASS_IDS.length} из {COMPASSES.length} наставников. Кто уже открыт,
-            а кто ждёт следующих версий.
+            В деле {ACTIVE_COMPASS_IDS.length} из {COMPASSES.length} наставников; замеров голоса:{" "}
+            {deltas.length}. Как движется голос — по их осям.
           </p>
         </Link>
         <Link href="/study/shelf" className="study-card">
           <h2>Полка</h2>
           <p>Тетрадей на полке: {shelved}. Завершённое — не обязательно опубликованное.</p>
+        </Link>
+        <Link href="/study/azbuka" className="study-card">
+          <h2>Азбука мастерской</h2>
+          <p>Короткий словарь слов, которыми говорит мастерская.</p>
         </Link>
       </div>
     </>
