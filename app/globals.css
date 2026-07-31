@@ -588,6 +588,39 @@ a {
   border-color: var(--accent);
 }
 
+.toolbar-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Кнопка-действие с откликом: форма-обёртка держит кнопку и галочку в ряд. */
+.toolbar-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-flash {
+  font-size: 0.85rem;
+  color: var(--accent);
+  animation: toolbar-flash-in 0.2s ease-out;
+}
+
+.toolbar-flash[data-ok="false"] {
+  color: var(--gold);
+}
+
+@keyframes toolbar-flash-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.3rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .inquiry-button {
   border: 1px solid var(--line);
   background: var(--paper);
