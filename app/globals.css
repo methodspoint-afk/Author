@@ -781,6 +781,13 @@ a {
 }
 
 /* Будущие наставники — компактный подвал */
+/* Дельты наставников — «как двигается голос» (переехали с «Голоса») */
+.mentor-deltas {
+  margin-top: 2.5rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+}
+
 .mentors-upcoming {
   margin-top: 2.5rem;
   padding-top: 1.4rem;

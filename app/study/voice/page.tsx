@@ -4,13 +4,38 @@ import Link from "next/link";
 import PassCard from "../../../components/PassCard";
 import { collectAuditPairs } from "../../../lib/audit";
 import { getAllPasses, getNotebooks } from "../../../lib/data";
-import { readDeltaTables } from "../../../lib/deltas";
 import { readLastAuditDate } from "../../../lib/rituals";
 import { readCollection } from "../../../lib/storage";
 import type { FragmentVersion } from "../../../lib/types";
 import { startAudit } from "../../desk/actions";
 
 export const dynamic = "force-dynamic";
+
+const auditDateFormat = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const auditMonthFormat = new Intl.DateTimeFormat("ru-RU", {
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+// Имя файла аудита (AUDIT-YYYY-MM[-DD]) → человеческий заголовок без .md.
+function auditLabel(name: string): string {
+  const match = /^AUDIT-(\d{4})-(\d{2})(?:-(\d{2}))?$/u.exec(name);
+  if (match === null) return name.replace(/^AUDIT-/u, "Аудит ");
+  const [, year, month, day] = match;
+  if (day !== undefined) {
+    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+    return `Аудит от ${auditDateFormat.format(date)}`;
+  }
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
+  return `Аудит за ${auditMonthFormat.format(date)}`;
+}
 
 async function readIfExists(filePath: string): Promise<string | undefined> {
   try {
@@ -42,9 +67,8 @@ async function readAudits(): Promise<Array<{ name: string; content: string }>> {
 }
 
 export default async function VoicePage() {
-  const [voiceCore, deltas, audits, notebooks, passes, versions, lastAuditDate] = await Promise.all([
+  const [voiceCore, audits, notebooks, passes, versions, lastAuditDate] = await Promise.all([
     readIfExists(path.join(process.cwd(), "learning", "AUTHOR-VOICE-CORE.md")),
-    readDeltaTables(),
     readAudits(),
     getNotebooks(),
     getAllPasses(),
@@ -62,8 +86,8 @@ export default async function VoicePage() {
       </p>
       <h1>Голос</h1>
       <p className="empty-note">
-        Портрет — качественный, не численный: словами и примерами, не графиками. Данные живут в
-        markdown-файлах (learning/), эта страница их только показывает.
+        Портрет — качественный, не численный: словами и примерами, не графиками. Замеры по
+        осям каждого наставника переехали в <Link href="/study/mentors">Наставники</Link>.
       </p>
 
       <h2>Аудит</h2>
@@ -93,45 +117,14 @@ export default async function VoicePage() {
       <h2>Подтверждённые механики</h2>
       {voiceCore !== undefined ? (
         <details className="voice-core" open>
-          <summary>AUTHOR-VOICE-CORE.md</summary>
+          <summary>Ядро голоса</summary>
           <pre>{voiceCore}</pre>
         </details>
       ) : (
         <p className="empty-note">
-          Файл learning/AUTHOR-VOICE-CORE.md ещё не заведён — он появится с первым подтверждённым
-          кандидатом аудита (правило 2–3 повторов).
+          Ядро голоса ещё не заведено — оно появится с первым подтверждённым кандидатом аудита
+          (правило 2–3 повторов).
         </p>
-      )}
-
-      <h2>Дельты наставников</h2>
-      {deltas.length === 0 ? (
-        <p className="empty-note">Ни у одного наставника пока нет дельта-таблицы.</p>
-      ) : (
-        deltas.map(({ compass, header, rows }) => (
-          <details key={compass.id} className="delta-block" open={rows.some((row) => (row[1] ?? "") !== "")}>
-            <summary>{compass.title}</summary>
-            <div className="delta-table-wrap">
-              <table className="delta-table">
-                <thead>
-                  <tr>
-                    {header.map((cell, index) => (
-                      <th key={index}>{cell}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex}>{cell}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-        ))
       )}
 
       <h2>Аудиты</h2>
@@ -140,7 +133,7 @@ export default async function VoicePage() {
       ) : (
         audits.map((audit) => (
           <details key={audit.name} className="voice-core">
-            <summary>{audit.name}</summary>
+            <summary>{auditLabel(audit.name)}</summary>
             <pre>{audit.content}</pre>
           </details>
         ))
