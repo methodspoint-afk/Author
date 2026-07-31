@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ACTIVE_COMPASS_IDS, COMPASSES, isCompassActive } from "../../../lib/compasses";
+import { ACTIVE_COMPASSES, COMPASSES, isCompassActive } from "../../../lib/compasses";
 import { getAllPasses } from "../../../lib/data";
 import { mentorEngagement } from "../../../lib/mentors";
 
@@ -18,61 +18,62 @@ export default async function MentorsPage() {
   const passes = await getAllPasses();
   const engagement = mentorEngagement(passes);
 
-  // Задействованные — первыми (в порядке реестра), затем будущие.
-  const ordered = [
-    ...COMPASSES.filter((compass) => isCompassActive(compass.id)),
-    ...COMPASSES.filter((compass) => !isCompassActive(compass.id)),
-  ];
+  const active = ACTIVE_COMPASSES;
+  const upcoming = COMPASSES.filter((compass) => !isCompassActive(compass.id));
 
   return (
     <>
       <p className="back-link">
         <Link href="/study">← Кабинет</Link>
       </p>
-      <h1>Карта наставников</h1>
+      <h1>Наставники</h1>
       <p className="empty-note">
-        В этой версии в деле {ACTIVE_COMPASS_IDS.length} наставника из {COMPASSES.length}.
-        Компас заполняется с каждым завершённым проходом; остальные наставники ждут своих
-        версий Мастерской.
+        В этой версии в деле {active.length} наставника из {COMPASSES.length}. Компас
+        заполняется с каждым завершённым проходом «Сверить».
       </p>
 
+      {/* Задействованные — крупным первым рядом. */}
       <div className="mentor-grid">
-        {ordered.map((compass) => {
-          const active = isCompassActive(compass.id);
+        {active.map((compass) => {
           const entry = engagement.get(compass.id);
           const filled = Math.min(entry?.count ?? 0, FILL_SLOTS);
 
           return (
-            <div key={compass.id} className="mentor-card" data-active={active}>
+            <div key={compass.id} className="mentor-card" data-active="true">
               <h2>{compass.title}</h2>
               <p className="mentor-genre">{compass.nativeGenre}</p>
-
-              {active ? (
-                <>
-                  <div className="mentor-fill" aria-label={`проходов: ${entry?.count ?? 0}`}>
-                    {Array.from({ length: FILL_SLOTS }, (_, i) => (
-                      <span key={i} className="mentor-dot" data-filled={i < filled} />
-                    ))}
-                  </div>
-                  {entry === undefined ? (
-                    <p className="mentor-note">
-                      Ещё не открыт — позовите на проход из тетради.
-                    </p>
-                  ) : (
-                    <p className="mentor-note">
-                      Проходов: {entry.count}
-                      {entry.lastAt !== undefined &&
-                        ` · последний — ${dateFormat.format(new Date(entry.lastAt))}`}
-                    </p>
-                  )}
-                </>
+              <div className="mentor-fill" aria-label={`проходов: ${entry?.count ?? 0}`}>
+                {Array.from({ length: FILL_SLOTS }, (_, i) => (
+                  <span key={i} className="mentor-dot" data-filled={i < filled} />
+                ))}
+              </div>
+              {entry === undefined ? (
+                <p className="mentor-note">Ещё не открыт — позовите на проход из тетради.</p>
               ) : (
-                <p className="mentor-note mentor-soon">В следующих версиях</p>
+                <p className="mentor-note">
+                  Проходов: {entry.count}
+                  {entry.lastAt !== undefined &&
+                    ` · последний — ${dateFormat.format(new Date(entry.lastAt))}`}
+                </p>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Будущие наставники — компактным подвалом, без метки на каждой карточке. */}
+      {upcoming.length > 0 && (
+        <section className="mentors-upcoming">
+          <h2>Наставники: встретиться в следующих версиях</h2>
+          <div className="mentor-mini-grid">
+            {upcoming.map((compass) => (
+              <div key={compass.id} className="mentor-mini">
+                {compass.title}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }

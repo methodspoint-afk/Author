@@ -139,15 +139,22 @@ button {
   padding: 2rem;
 }
 
+/* Заголовочный комплекс — глубокий морской (var(--accent)), крупно, serif. */
 h1 {
-  font-size: 1.45rem;
-  font-weight: 650;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--accent);
   margin: 0 0 1.25rem;
+  text-wrap: balance;
 }
 
 h2 {
-  font-size: 1.05rem;
-  font-weight: 650;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--accent);
   margin: 0 0 0.75rem;
 }
 
@@ -773,8 +780,31 @@ a {
   margin: 0;
 }
 
-.mentor-soon {
-  font-style: italic;
+/* Будущие наставники — компактный подвал */
+.mentors-upcoming {
+  margin-top: 2.5rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+}
+.mentors-upcoming h2 {
+  font-size: 1rem;
+  color: var(--ink-soft);
+}
+.mentor-mini-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.mentor-mini {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  background: var(--card);
+  filter: grayscale(1);
+  opacity: 0.6;
 }
 
 /* Путь фрагмента — пэйофф итераций (ТЗ §5.2, §13.5) */
