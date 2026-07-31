@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { FragmentVersion } from "./types";
+import type { FragmentVersion, Pass } from "./types";
 
 // Напоминание об аудите (ТЗ §5.4): дисциплина LEARNING-LOOP поручена
 // секретарю. После N зафиксированных версий с момента последнего аудита
@@ -41,6 +41,29 @@ export async function readLastAuditDate(rootDir: string = process.cwd()): Promis
     if (date !== undefined && (latest === undefined || date > latest)) latest = date;
   }
   return latest;
+}
+
+/**
+ * Дата последней «Сверки голоса» — по завершённым проходам-сверкам (тип
+ * «audit»). В версии 1.0 сверка не пишет md-файл, поэтому дату берём с самого
+ * прохода: именно она гасит напоминание на Столе.
+ */
+export function lastVoiceCheckDate(passes: Pass[]): string | undefined {
+  let latest: string | undefined;
+  for (const pass of passes) {
+    if (pass.type !== "audit" || pass.status !== "completed") continue;
+    if (pass.completedAt === undefined) continue;
+    const date = pass.completedAt.slice(0, 10);
+    if (latest === undefined || date > latest) latest = date;
+  }
+  return latest;
+}
+
+/** Поздняя из двух дат (YYYY-MM-DD); undefined уступает любой дате. */
+export function laterDate(a: string | undefined, b: string | undefined): string | undefined {
+  if (a === undefined) return b;
+  if (b === undefined) return a;
+  return a > b ? a : b;
 }
 
 /** Версии, зафиксированные строго после дня аудита (день аудита уже сверен). */

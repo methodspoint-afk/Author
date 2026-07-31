@@ -1052,6 +1052,51 @@ a {
   font-size: 0.92rem;
 }
 
+.landing-version {
+  margin-top: 2rem;
+  text-align: center;
+  font-family: var(--btn);
+  font-size: 0.85rem;
+}
+.landing-version a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.landing-version a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Паспорт версии */
+.version-page {
+  max-width: 46rem;
+}
+.version-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.version-list li {
+  color: var(--ink-soft);
+}
+.version-roadmap {
+  display: grid;
+  gap: 1rem;
+}
+.version-milestone {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+}
+.version-milestone h3 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+
 /* Навигация «назад» на подстраницах Кабинета */
 .back-link {
   font-family: var(--btn);

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCompassPrompt,
   buildDryOutPrompt,
+  buildVoiceCheckPrompt,
   extractGrowthPoint,
   parsePromptResponse,
 } from "../lib/prompts";
@@ -28,6 +29,23 @@ describe("сборка промптов", () => {
     expect(prompt).toContain("ПЕРЕНОС ЖАНРА");
     expect(prompt).toContain("иронический детектив");
     expect(prompt).toContain("драма и сценарий");
+  });
+});
+
+describe("депеша сверки голоса (версия 1.0)", () => {
+  it("лёгкое зеркало: одна секция, без механик-таблиц и дельт", () => {
+    const prompt = buildVoiceCheckPrompt([
+      { notebookTitle: "Малышка", before: "Было.", after: "Стало.", note: "срезала разгон" },
+    ]);
+    expect(prompt).toContain("сверка голоса");
+    expect(prompt).toContain("тетрадь «Малышка»");
+    expect(prompt).toContain("Было.");
+    expect(prompt).toContain("Стало.");
+    expect(prompt).toContain("[СЕКЦИЯ: сверка]");
+    expect(prompt).toContain("===КОНЕЦ===");
+    // именно лёгкий вариант — без секций полного аудита
+    expect(prompt).not.toContain("[СЕКЦИЯ: механики]");
+    expect(prompt).not.toContain("[СЕКЦИЯ: дрейф голоса]");
   });
 });
 

@@ -22,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="page">{children}</main>
         <footer className="bottombar">
+          <Link href="/version">Версия 1.0</Link>
           <a href="mailto:methodspoint@gmail.com?subject=Стол%20и%20Кабинет">✉ Письмо мастеру</a>
         </footer>
       </body>

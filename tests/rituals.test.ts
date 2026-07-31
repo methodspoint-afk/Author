@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { auditReminder, countVersionsSince, readLastAuditDate, workRhythm } from "../lib/rituals";
-import type { FragmentVersion } from "../lib/types";
+import {
+  auditReminder,
+  countVersionsSince,
+  lastVoiceCheckDate,
+  laterDate,
+  readLastAuditDate,
+  workRhythm,
+} from "../lib/rituals";
+import type { FragmentVersion, Pass } from "../lib/types";
 
 function version(createdAt: string): FragmentVersion {
   return { id: createdAt, notebookId: "nb1", text: "т", createdAt };
@@ -54,6 +61,40 @@ describe("напоминание об аудите", () => {
 
     expect(await readLastAuditDate(root)).toBe("2026-07-19");
     await fs.rm(root, { recursive: true, force: true });
+  });
+});
+
+describe("дата последней сверки голоса", () => {
+  function auditPass(status: Pass["status"], completedAt?: string): Pass {
+    return {
+      id: completedAt ?? status,
+      type: "audit",
+      label: "Сверка голоса",
+      notebookId: "audit-1",
+      promptText: "…",
+      status,
+      ...(completedAt !== undefined && { completedAt }),
+    };
+  }
+
+  it("берёт максимум по завершённым проходам-сверкам", () => {
+    const passes = [
+      auditPass("completed", "2026-07-10T10:00:00Z"),
+      auditPass("completed", "2026-07-22T10:00:00Z"),
+      auditPass("draft"),
+    ];
+    expect(lastVoiceCheckDate(passes)).toBe("2026-07-22");
+  });
+
+  it("нет завершённых сверок — undefined", () => {
+    expect(lastVoiceCheckDate([auditPass("draft")])).toBeUndefined();
+  });
+
+  it("laterDate выбирает позднюю дату, undefined уступает", () => {
+    expect(laterDate("2026-07-05", "2026-07-22")).toBe("2026-07-22");
+    expect(laterDate(undefined, "2026-07-22")).toBe("2026-07-22");
+    expect(laterDate("2026-07-05", undefined)).toBe("2026-07-05");
+    expect(laterDate(undefined, undefined)).toBeUndefined();
   });
 });
 

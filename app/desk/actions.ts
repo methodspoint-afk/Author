@@ -5,11 +5,11 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { buildAuditMarkdown, collectAuditPairs, writeAuditFile } from "../../lib/audit";
+import { collectAuditPairs } from "../../lib/audit";
 import { getCompass } from "../../lib/compasses";
 import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
 import { buildNewNotebook, cleanTitle, removeNotebook, removePass } from "../../lib/notebook";
-import { readLastAuditDate } from "../../lib/rituals";
+import { lastVoiceCheckDate, laterDate, readLastAuditDate } from "../../lib/rituals";
 import {
   buildCompassPrompt,
   buildDryOutPrompt,
@@ -293,11 +293,11 @@ export async function submitPassResponse(
   pass.completedAt = new Date().toISOString();
   pass.lastParseFailed = false;
 
-  // Завершённый аудит становится файлом в learning/audits/ — он и есть
-  // новая «дата последнего аудита», напоминание на Столе гаснет само.
+  // «Сверка голоса» (тип audit) в версии 1.0 — лёгкое зеркало: файл не пишем,
+  // результат живёт на проходе. Завершённая сверка сама гасит напоминание на
+  // Столе (дата берётся с прохода, см. lastVoiceCheckDate). Полный «Аудит
+  // корпуса» с файлами-архивами и авто-ядром — под следующую версию.
   if (pass.type === "audit") {
-    const date = new Date(pass.completedAt);
-    pass.committedPath = await writeAuditFile(buildAuditMarkdown(parsed, date), date);
     revalidatePath("/study/voice");
     revalidatePath("/study");
   }
@@ -308,30 +308,22 @@ export async function submitPassResponse(
 }
 
 /**
- * Провести аудит корпуса (ТЗ §5.4): секретарь собирает депешу из пар
- * «было ↔ стало», накопившихся с прошлого аудита. Один аудит за раз.
+ * Провести «Сверку голоса» (версия 1.0): секретарь собирает депешу-зеркало из
+ * пар «было ↔ стало», накопившихся с прошлой сверки, и просит назвать 2–3
+ * повторяющиеся черты правок. Лёгкий вариант; полный «Аудит корпуса» — под v2.
+ * Одна сверка за раз. «Дата последней сверки» берётся с завершённого прохода.
  */
-export async function startAudit(): Promise<void> {
+export async function startVoiceCheck(): Promise<void> {
   const { notebooks, passes, versions } = await loadAll();
   if (passes.some((pass) => pass.type === "audit" && pass.status !== "completed")) return;
 
-  const lastAuditDate = await readLastAuditDate();
-  const pairs = collectAuditPairs(notebooks, versions, lastAuditDate);
+  const since = laterDate(await readLastAuditDate(), lastVoiceCheckDate(passes));
+  const pairs = collectAuditPairs(notebooks, versions, since);
   if (pairs.length === 0) return;
 
-  let voiceCore: string | undefined;
-  try {
-    voiceCore = await fs.readFile(
-      path.join(process.cwd(), "learning", "AUTHOR-VOICE-CORE.md"),
-      "utf8",
-    );
-  } catch {
-    voiceCore = undefined;
-  }
-
-  const { buildAuditPrompt } = await import("../../lib/prompts");
+  const { buildVoiceCheckPrompt } = await import("../../lib/prompts");
   const now = new Date().toISOString();
-  const title = `Аудит корпуса — ${now.slice(0, 10)}`;
+  const title = `Сверка голоса — ${now.slice(0, 10)}`;
   const notebook: Notebook = {
     id: `audit-${randomUUID().slice(0, 8)}`,
     title,
@@ -345,7 +337,7 @@ export async function startAudit(): Promise<void> {
     type: "audit",
     label: title,
     notebookId: notebook.id,
-    promptText: buildAuditPrompt(pairs, voiceCore),
+    promptText: buildVoiceCheckPrompt(pairs),
     status: "draft",
   };
   notebook.passIds.push(pass.id);

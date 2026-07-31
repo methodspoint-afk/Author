@@ -9,7 +9,7 @@ export const PASS_TYPE_LABELS: Record<PassType, string> = {
   "mentor-compass": "Сверить",
   inquiry: "Изыскание",
   digest: "Сводка",
-  audit: "Аудит корпуса",
+  audit: "Сверка голоса",
   chekhov: "Чеховский разбор (v1)",
 };
 
