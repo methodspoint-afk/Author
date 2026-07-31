@@ -898,6 +898,90 @@ a {
   margin: 0 0 0.7rem;
 }
 
+/* Лендинг — первый экран «Стол и Кабинет» */
+.landing {
+  max-width: 44rem;
+}
+.landing-eyebrow {
+  font-family: var(--btn);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.6rem;
+}
+.landing-title {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  margin: 0 0 1rem;
+  letter-spacing: -0.01em;
+}
+.landing-title::after {
+  content: " ❦";
+  color: var(--gold);
+  font-size: 0.5em;
+  vertical-align: middle;
+}
+.landing-motto {
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  margin: 0 0 2rem;
+  max-width: 40rem;
+}
+.landing-block {
+  margin: 0 0 1.6rem;
+}
+.landing-block h2 {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+}
+.landing-paths {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.landing-paths li {
+  color: var(--ink-soft);
+}
+.landing-doors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 2.2rem;
+}
+@media (max-width: 34rem) {
+  .landing-doors {
+    grid-template-columns: 1fr;
+  }
+}
+.landing-door {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.3rem 1.4rem;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow, 0 1px 0 var(--line));
+  transition: border-color 0.2s;
+}
+.landing-door:hover {
+  border-color: var(--accent);
+}
+.landing-door h2 {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+.landing-door p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
 /* Навигация «назад» на подстраницах Кабинета */
 .back-link {
   font-family: var(--btn);
