@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ACTIVE_COMPASSES, COMPASSES, isCompassActive } from "../../../lib/compasses";
 import { getAllPasses } from "../../../lib/data";
+import { readDeltaTables } from "../../../lib/deltas";
 import { mentorEngagement } from "../../../lib/mentors";
 
 export const dynamic = "force-dynamic";
@@ -15,11 +16,19 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
 const FILL_SLOTS = 7;
 
 export default async function MentorsPage() {
-  const passes = await getAllPasses();
+  const [passes, deltas] = await Promise.all([getAllPasses(), readDeltaTables()]);
   const engagement = mentorEngagement(passes);
 
   const active = ACTIVE_COMPASSES;
   const upcoming = COMPASSES.filter((compass) => !isCompassActive(compass.id));
+
+  // Дельты — «как двигается голос у наставника»; задействованные показываем первыми.
+  const activeIds = new Set(active.map((compass) => compass.id));
+  const sortedDeltas = [...deltas].sort((a, b) => {
+    const aActive = activeIds.has(a.compass.id) ? 0 : 1;
+    const bActive = activeIds.has(b.compass.id) ? 0 : 1;
+    return aActive - bActive;
+  });
 
   return (
     <>
@@ -60,6 +69,46 @@ export default async function MentorsPage() {
           );
         })}
       </div>
+
+      {/* Дельты наставников — как двигается голос (переехало сюда с «Голоса»). */}
+      {sortedDeltas.length > 0 && (
+        <section className="mentor-deltas">
+          <h2>Как двигается голос</h2>
+          <p className="empty-note">
+            Замеры по осям каждого наставника: где голос силён, где точка роста, куда
+            сдвинулся за круги правок. Заполняются аудитами.
+          </p>
+          {sortedDeltas.map(({ compass, header, rows }) => (
+            <details
+              key={compass.id}
+              className="delta-block"
+              open={rows.some((row) => (row[1] ?? "") !== "")}
+            >
+              <summary>{compass.title}</summary>
+              <div className="delta-table-wrap">
+                <table className="delta-table">
+                  <thead>
+                    <tr>
+                      {header.map((cell, index) => (
+                        <th key={index}>{cell}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex}>{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          ))}
+        </section>
+      )}
 
       {/* Будущие наставники — компактным подвалом, без метки на каждой карточке. */}
       {upcoming.length > 0 && (
