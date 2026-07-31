@@ -1,5 +1,10 @@
 import PassActions from "./PassActions";
-import { COMPASS_TITLES, PASS_STATUS_LABELS, PASS_TYPE_LABELS } from "../lib/passMeta";
+import {
+  COMPASS_TITLES,
+  PASS_STATUS_LABELS,
+  PASS_STATUS_LABELS_INQUIRY,
+  PASS_TYPE_LABELS,
+} from "../lib/passMeta";
 import type { Pass } from "../lib/types";
 
 const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
@@ -11,10 +16,14 @@ const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
 });
 
 export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpen: boolean }) {
+  const isInquiry = pass.type === "inquiry";
   const title =
     pass.type === "mentor-compass" && pass.compassId !== undefined
       ? `Наставник: ${COMPASS_TITLES[pass.compassId] ?? pass.compassId}`
       : PASS_TYPE_LABELS[pass.type];
+  const statusLabel = isInquiry
+    ? PASS_STATUS_LABELS_INQUIRY[pass.status]
+    : PASS_STATUS_LABELS[pass.status];
 
   // Завершённые проходы свёрнуты по умолчанию — разбор не «висит колбасой»
   // поверх работы. Раскрыт только активный (черновик/у наставника) последний.
@@ -25,7 +34,7 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
       <summary>
         {title}{" "}
         <span className="pass-status" data-status={pass.status}>
-          · {PASS_STATUS_LABELS[pass.status]}
+          · {statusLabel}
           {pass.completedAt !== undefined &&
             ` · ${dateTimeFormat.format(new Date(pass.completedAt))}`}
         </span>
@@ -50,6 +59,7 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
           passId={pass.id}
           status={pass.status}
           promptText={pass.promptText}
+          isInquiry={isInquiry}
           {...(pass.lastParseFailed !== undefined && { lastParseFailed: pass.lastParseFailed })}
         />
       </div>
