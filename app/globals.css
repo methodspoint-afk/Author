@@ -565,6 +565,26 @@ a {
   margin: 0.4rem 0 0;
 }
 
+/* Азбука мастерской — глоссарий для автора */
+.glossary-group {
+  margin-bottom: 1.6rem;
+}
+.glossary {
+  margin: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+.glossary dt {
+  font-family: var(--serif);
+  font-weight: 600;
+  color: var(--accent);
+}
+.glossary dd {
+  margin: 0.1rem 0 0;
+  color: var(--ink-soft);
+  max-width: 46rem;
+}
+
 .notebook-toolbar {
   display: flex;
   gap: 0.6rem;
