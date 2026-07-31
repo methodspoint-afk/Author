@@ -4,7 +4,27 @@
 
 ## В РАБОТЕ
 
-*(Пусто. Активной незавершённой задачи нет.)*
+- **Задача:** Экспорт тетради в Word и PDF (и TXT). Без тяжёлых зависимостей
+  (чтобы у автора `git pull` + `npm run dev` работал без `npm install`):
+  Word — через RTF (Word открывает нативно, кириллица через \u), PDF — через
+  печать браузера («Сохранить как PDF»), TXT — простой текст.
+- **План:**
+  1. `lib/export.ts`: `buildManuscript(notebook, versions)` (заголовок +
+     финальный текст), `toPlainText`, `toRtf` (эскейп + кириллица), `safeFileName`.
+  2. Роут `app/desk/[notebookId]/export/route.ts` (GET ?format=rtf|txt) —
+     отдаёт файл с Content-Disposition (кириллическое имя через filename*).
+  3. Печатная страница `app/desk/[notebookId]/print/page.tsx` — чистый
+     манускрипт + кнопка «Сохранить как PDF» (window.print); print-CSS прячет
+     шапку/подвал.
+  4. На странице тетради — блок «Экспорт»: Word (.rtf), PDF (печать), TXT.
+  5. CSS манускрипта + @media print; словарь; тесты на lib/export.
+- **Файлы:** lib/export.ts (новый), app/desk/[notebookId]/export/route.ts
+  (новый), app/desk/[notebookId]/print/page.tsx (новый),
+  app/desk/[notebookId]/page.tsx, app/globals.css, docs/СЛОВАРЬ.md,
+  tests/export.test.ts (новый).
+- **Критерий готовности:** со страницы тетради скачивается .rtf (открывается
+  в Word, кириллица цела) и .txt; кнопка PDF открывает печать. Картотека/Полка
+  ведут на тетрадь → экспорт в клик. Зелёное, PR → main.
 
 <!--
   Когда начинается задача разработки, заглушка выше заменяется блоком:
