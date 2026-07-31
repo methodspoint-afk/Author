@@ -3,6 +3,7 @@ import FragmentPane from "../../../components/FragmentPane";
 import NewPassForm from "../../../components/NewPassForm";
 import NotebookControls from "../../../components/NotebookControls";
 import PassCard from "../../../components/PassCard";
+import ToolbarActionButton from "../../../components/ToolbarActionButton";
 import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
@@ -38,19 +39,19 @@ export default async function NotebookPage({
       <h1>{notebook.title}</h1>
       <div className="notebook-toolbar">
         {completedLensCount >= 2 && (
-          <form action={createDigest}>
-            <input type="hidden" name="notebookId" value={notebook.id} />
-            <button type="submit" className="toolbar-button">
-              Сводка секретаря
-            </button>
-          </form>
+          <ToolbarActionButton
+            action={createDigest}
+            notebookId={notebook.id}
+            label="Сводка секретаря"
+            pendingLabel="Собираю сводку…"
+          />
         )}
-        <form action={commitToCorpus}>
-          <input type="hidden" name="notebookId" value={notebook.id} />
-          <button type="submit" className="toolbar-button">
-            {notebook.committedPath !== undefined ? "Обновить в картотеке" : "Внести в картотеку"}
-          </button>
-        </form>
+        <ToolbarActionButton
+          action={commitToCorpus}
+          notebookId={notebook.id}
+          label={notebook.committedPath !== undefined ? "Обновить в картотеке" : "Внести в картотеку"}
+          pendingLabel={notebook.committedPath !== undefined ? "Обновляю…" : "Вношу…"}
+        />
         {notebook.shelvedAt === undefined ? (
           <form action={shelveNotebook}>
             <input type="hidden" name="notebookId" value={notebook.id} />

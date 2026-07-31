@@ -23,6 +23,12 @@ export interface ActionResult {
   error?: string;
 }
 
+// Отклик кнопок-действий в панели тетради: показать автору, что сработало.
+export interface ToolbarResult {
+  ok: boolean;
+  message: string;
+}
+
 async function loadAll() {
   const [notebooks, passes, versions] = await Promise.all([
     readCollection<Notebook>("notebooks.json"),
@@ -436,11 +442,14 @@ export async function createInquiry(
 }
 
 /** Сводка по тетради: секретарь сводит несколько итераций (ТЗ §9). */
-export async function createDigest(formData: FormData): Promise<void> {
+export async function createDigest(
+  _prev: ToolbarResult | undefined,
+  formData: FormData,
+): Promise<ToolbarResult> {
   const notebookId = String(formData.get("notebookId") ?? "");
   const { notebooks, passes, versions } = await loadAll();
   const notebook = notebooks.find((entry) => entry.id === notebookId);
-  if (notebook === undefined) return;
+  if (notebook === undefined) return { ok: false, message: "Тетрадь не найдена." };
 
   const notebookPasses = notebook.passIds
     .map((id) => passes.find((pass) => pass.id === id))
@@ -449,14 +458,18 @@ export async function createDigest(formData: FormData): Promise<void> {
   const completedLens = notebookPasses.filter(
     (pass) => isLensPass(pass.type) && pass.status === "completed",
   );
-  if (completedLens.length < 2) return; // сводка имеет смысл от двух итераций
+  if (completedLens.length < 2) {
+    return { ok: false, message: "Нужно хотя бы две завершённые линзы." };
+  }
 
   const notebookVersions = notebook.versionIds
     .map((id) => versions.find((version) => version.id === id))
     .filter((version): version is FragmentVersion => version !== undefined);
   const first = notebookVersions[0];
   const last = notebookVersions[notebookVersions.length - 1];
-  if (first === undefined || last === undefined) return;
+  if (first === undefined || last === undefined) {
+    return { ok: false, message: "В тетради нет версий." };
+  }
 
   const { buildDigestPrompt } = await import("../../lib/prompts");
   const versionByBasedOn = new Map(
@@ -499,14 +512,19 @@ export async function createDigest(formData: FormData): Promise<void> {
   await writeCollection("passes.json", passes);
   await writeCollection("notebooks.json", notebooks);
   refresh(notebookId);
+  return { ok: true, message: "Сводка готова — она ниже, в проходах." };
 }
 
 /** Внести тетрадь в картотеку: markdown-кейс в learning/corpus/. */
-export async function commitToCorpus(formData: FormData): Promise<void> {
+export async function commitToCorpus(
+  _prev: ToolbarResult | undefined,
+  formData: FormData,
+): Promise<ToolbarResult> {
   const notebookId = String(formData.get("notebookId") ?? "");
   const { notebooks, passes, versions } = await loadAll();
   const notebook = notebooks.find((entry) => entry.id === notebookId);
-  if (notebook === undefined) return;
+  if (notebook === undefined) return { ok: false, message: "Тетрадь не найдена." };
+  const wasCommitted = notebook.committedPath !== undefined;
 
   const notebookVersions = notebook.versionIds
     .map((id) => versions.find((version) => version.id === id))
@@ -530,6 +548,10 @@ export async function commitToCorpus(formData: FormData): Promise<void> {
   refresh(notebookId);
   revalidatePath("/study/card-index");
   revalidatePath("/study");
+  return {
+    ok: true,
+    message: wasCommitted ? "Обновлено в картотеке." : "Внесено в картотеку.",
+  };
 }
 
 /** На полку: снять со стола, не публикуя (полка ≠ картотека, ТЗ §7.5). */
