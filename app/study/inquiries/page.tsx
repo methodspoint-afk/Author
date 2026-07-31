@@ -15,6 +15,9 @@ export default async function InquiriesPage() {
 
   return (
     <>
+      <p className="back-link">
+        <Link href="/study">← Кабинет</Link>
+      </p>
       <h1>Изыскания</h1>
       <div className="lens-block">
         <h2>Новое изыскание</h2>

@@ -898,6 +898,20 @@ a {
   margin: 0 0 0.7rem;
 }
 
+/* Навигация «назад» на подстраницах Кабинета */
+.back-link {
+  font-family: var(--btn);
+  font-size: 0.82rem;
+  margin: 0 0 0.5rem;
+}
+.back-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.back-link a:hover {
+  text-decoration: underline;
+}
+
 /* Заведение новой тетради */
 
 .new-notebook {

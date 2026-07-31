@@ -1,6 +1,4 @@
 import PassActions from "./PassActions";
-import { createInquiryFromPass } from "../app/desk/actions";
-import { extractGrowthPoint } from "../lib/prompts";
 import { COMPASS_TITLES, PASS_STATUS_LABELS, PASS_TYPE_LABELS } from "../lib/passMeta";
 import type { Pass } from "../lib/types";
 
@@ -18,14 +16,12 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
       ? `Наставник: ${COMPASS_TITLES[pass.compassId] ?? pass.compassId}`
       : PASS_TYPE_LABELS[pass.type];
 
-  const parsed = Array.isArray(pass.parsedResult) ? pass.parsedResult[0] : pass.parsedResult;
-  const growthPoint =
-    pass.status === "completed" && pass.type !== "inquiry" && parsed !== undefined
-      ? extractGrowthPoint(parsed)
-      : undefined;
+  // Завершённые проходы свёрнуты по умолчанию — разбор не «висит колбасой»
+  // поверх работы. Раскрыт только активный (черновик/у наставника) последний.
+  const open = defaultOpen && pass.status !== "completed";
 
   return (
-    <details className="pass-card" open={defaultOpen}>
+    <details className="pass-card" open={open}>
       <summary>
         {title}{" "}
         <span className="pass-status" data-status={pass.status}>
@@ -37,10 +33,7 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
       <div className="pass-body">
         {pass.intention !== undefined && <p>Намерение: {pass.intention}</p>}
         {pass.inquiryTopic !== undefined && <p>Тема изыскания: {pass.inquiryTopic}</p>}
-        <details>
-          <summary>Депеша (промпт)</summary>
-          <pre>{pass.promptText}</pre>
-        </details>
+        {/* Промпт пользователю не показываем — только кнопка «Скопировать» в PassActions. */}
         {pass.parsedResult !== undefined && (
           <details open={pass.status === "completed"}>
             <summary>{pass.type === "inquiry" ? "Справка" : "Разбор"}</summary>
@@ -59,14 +52,6 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
           promptText={pass.promptText}
           {...(pass.lastParseFailed !== undefined && { lastParseFailed: pass.lastParseFailed })}
         />
-        {growthPoint !== undefined && (
-          <form action={createInquiryFromPass}>
-            <input type="hidden" name="passId" value={pass.id} />
-            <button type="submit" className="inquiry-button">
-              Отправить секретаря за справкой
-            </button>
-          </form>
-        )}
       </div>
     </details>
   );
