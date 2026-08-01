@@ -987,6 +987,63 @@ a {
   border-top: 1px solid var(--line);
 }
 
+/* Сводка «как растёт голос» — наблюдения без осей и без грид-таблицы. */
+.delta-summary {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.9rem;
+  box-shadow: var(--shadow);
+}
+
+.delta-summary h3 {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin: 0 0 0.6rem;
+}
+
+.delta-line {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+}
+
+.delta-tag {
+  flex-shrink: 0;
+  font-family: var(--btn);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+  padding: 0.15rem 0.55rem;
+  margin-top: 0.2rem;
+}
+
+.delta-win .delta-tag {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.delta-work .delta-tag {
+  background: transparent;
+  border: 1px solid var(--rust);
+  color: var(--rust);
+}
+
+.delta-line ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.delta-line li {
+  margin: 0.1rem 0;
+}
+
 .mentors-upcoming {
   margin-top: 2.5rem;
   padding-top: 1.4rem;

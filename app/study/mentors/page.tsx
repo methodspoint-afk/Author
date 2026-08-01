@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ACTIVE_COMPASSES, COMPASSES, isCompassActive } from "../../../lib/compasses";
 import { getAllPasses } from "../../../lib/data";
-import { readDeltaTables } from "../../../lib/deltas";
+import { readDeltaTables, summarizeDeltaTable } from "../../../lib/deltas";
 import { mentorEngagement } from "../../../lib/mentors";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +29,8 @@ export default async function MentorsPage() {
     const bActive = activeIds.has(b.compass.id) ? 0 : 1;
     return aActive - bActive;
   });
+  // Наружу — сводка без осей (оси прячем), а не сырая таблица.
+  const deltaSummaries = sortedDeltas.map(summarizeDeltaTable);
 
   return (
     <>
@@ -37,8 +39,8 @@ export default async function MentorsPage() {
       </p>
       <h1>Наставники</h1>
       <p className="empty-note">
-        В этой версии в деле {active.length} наставника из {COMPASSES.length}. Компас
-        заполняется с каждым завершённым проходом «Сверить».
+        В этой версии в деле {active.length} наставника из {COMPASSES.length}. Кружки
+        наставника заполняются с каждым завершённым разбором «Сверить».
       </p>
 
       {/* Задействованные — крупным первым рядом. */}
@@ -70,42 +72,41 @@ export default async function MentorsPage() {
         })}
       </div>
 
-      {/* Дельты наставников — как двигается голос (переехало сюда с «Голоса»). */}
-      {sortedDeltas.length > 0 && (
+      {/* Как растёт голос — сводка наблюдений без раскрытия осей (оси — УТП). */}
+      {deltaSummaries.length > 0 && (
         <section className="mentor-deltas">
-          <h2>Дельта-таблица: как растёт ваш голос</h2>
+          <h2>Как растёт ваш голос</h2>
           <p className="empty-note">
-            Замеры по осям каждого наставника: где голос силён, где точка роста, куда
-            сдвинулся за круги правок. Заполняются сверками.
+            По следам линзы «Сверить» секретарь наблюдает, куда движется ваш голос: что уже
+            окрепло и над чем стоит поработать. Копится от круга к кругу.
           </p>
-          {sortedDeltas.map(({ compass, header, rows }) => (
-            <details
-              key={compass.id}
-              className="delta-block"
-              open={rows.some((row) => (row[1] ?? "") !== "")}
-            >
-              <summary>{compass.title}</summary>
-              <div className="delta-table-wrap">
-                <table className="delta-table">
-                  <thead>
-                    <tr>
-                      {header.map((cell, index) => (
-                        <th key={index}>{cell}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row, rowIndex) => (
-                      <tr key={rowIndex}>
-                        {row.map((cell, cellIndex) => (
-                          <td key={cellIndex}>{cell}</td>
-                        ))}
-                      </tr>
+          {deltaSummaries.map(({ compass, wins, toWork }) => (
+            <div key={compass.id} className="delta-summary">
+              <h3>{compass.title}</h3>
+              {wins.length > 0 && (
+                <div className="delta-line delta-win">
+                  <span className="delta-tag">Окрепло</span>
+                  <ul>
+                    {wins.map((text, index) => (
+                      <li key={index}>{text}</li>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </details>
+                  </ul>
+                </div>
+              )}
+              {toWork.length > 0 && (
+                <div className="delta-line delta-work">
+                  <span className="delta-tag">Над чем поработать</span>
+                  <ul>
+                    {toWork.map((text, index) => (
+                      <li key={index}>{text}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {wins.length === 0 && toWork.length === 0 && (
+                <p className="empty-note">Наблюдения копятся — пройдите ещё сверку.</p>
+              )}
+            </div>
           ))}
         </section>
       )}
