@@ -25,12 +25,11 @@ export default function ToolbarActionButton({
   );
   const [flash, setFlash] = useState<ToolbarResult | undefined>(undefined);
 
-  // Отклик держится несколько секунд и гаснет сам, не загромождая панель.
+  // Отклик не убегает сам — держится, пока автор не уберёт его крестиком
+  // (раньше гас за 3–4 сек и его не успевали прочитать).
   useEffect(() => {
     if (state === undefined) return;
     setFlash(state);
-    const timer = setTimeout(() => setFlash(undefined), 4000);
-    return () => clearTimeout(timer);
   }, [state]);
 
   return (
@@ -40,13 +39,16 @@ export default function ToolbarActionButton({
         {pending ? pendingLabel : label}
       </button>
       {flash !== undefined && (
-        <span
-          className="toolbar-flash"
-          data-ok={flash.ok}
-          role="status"
-          aria-live="polite"
-        >
+        <span className="toolbar-flash" data-ok={flash.ok} role="status" aria-live="polite">
           {flash.ok ? `✓ ${flash.message}` : flash.message}
+          <button
+            type="button"
+            className="toolbar-flash-close"
+            onClick={() => setFlash(undefined)}
+            aria-label="Убрать"
+          >
+            ×
+          </button>
         </span>
       )}
     </form>
