@@ -59,6 +59,14 @@ export function lastVoiceCheckDate(passes: Pass[]): string | undefined {
   return latest;
 }
 
+/** Сколько полных дней прошло с момента (ISO) до now. Отрицательное → 0. */
+export function daysSince(iso: string, now: Date = new Date()): number {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return 0;
+  const diff = now.getTime() - then;
+  return diff <= 0 ? 0 : Math.floor(diff / (24 * 60 * 60 * 1000));
+}
+
 /** Поздняя из двух дат (YYYY-MM-DD); undefined уступает любой дате. */
 export function laterDate(a: string | undefined, b: string | undefined): string | undefined {
   if (a === undefined) return b;

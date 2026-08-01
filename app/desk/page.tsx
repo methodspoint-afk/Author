@@ -1,5 +1,6 @@
 import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
+import SecretaryNote from "../../components/SecretaryNote";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { findPassToClose } from "../../lib/iteration";
 import { auditReminder, lastVoiceCheckDate, laterDate, readLastAuditDate, workRhythm } from "../../lib/rituals";
@@ -54,17 +55,17 @@ export default async function DeskPage() {
         вернуться.
       </p>
       {reminder.due ? (
-        <p className="secretary-note">
-          Секретарь: с последней сверки накопилось {reminder.count}{" "}
+        <SecretaryNote id={`audit-${lastCheck ?? "none"}-${reminder.count}`}>
+          С последней сверки накопилось {reminder.count}{" "}
           {plural(reminder.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}{" "}
           — пора сверить <Link href="/study/voice">голос</Link>.
-        </p>
+        </SecretaryNote>
       ) : (
         rhythm.due && (
-          <p className="secretary-note">
-            Секретарь: за последние {rhythm.windowDays} дней — {rhythm.count}{" "}
+          <SecretaryNote id={`rhythm-${rhythm.windowDays}-${rhythm.count}`}>
+            За последние {rhythm.windowDays} дней — {rhythm.count}{" "}
             {plural(rhythm.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}.
-          </p>
+          </SecretaryNote>
         )
       )}
       <div className="notebook-toolbar">

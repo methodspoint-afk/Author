@@ -729,13 +729,29 @@ a {
 }
 
 .toolbar-flash {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.85rem;
   color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 0.25rem 0.3rem 0.25rem 0.6rem;
   animation: toolbar-flash-in 0.2s ease-out;
 }
 
 .toolbar-flash[data-ok="false"] {
   color: var(--gold);
+}
+
+.toolbar-flash-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0 0.25rem;
 }
 
 @keyframes toolbar-flash-in {
@@ -1286,4 +1302,55 @@ a {
   border-left: 3px solid var(--accent);
   padding-left: 0.8rem;
   margin: -0.5rem 0 1.25rem;
+}
+
+/* Плашка секретаря: заметная подсказка с крестиком, не теряется в ряду */
+.secretary-plashka {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  margin: 0 0 1.25rem;
+}
+
+.secretary-plashka-badge {
+  flex-shrink: 0;
+  font-family: var(--btn);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.secretary-plashka-body {
+  flex: 1;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.secretary-plashka-body a {
+  color: var(--accent);
+}
+
+.secretary-plashka-close {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+
+.secretary-plashka-close:hover {
+  color: var(--accent);
 }

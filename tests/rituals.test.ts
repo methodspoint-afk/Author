@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   auditReminder,
   countVersionsSince,
+  daysSince,
   lastVoiceCheckDate,
   laterDate,
   readLastAuditDate,
@@ -95,6 +96,17 @@ describe("дата последней сверки голоса", () => {
     expect(laterDate(undefined, "2026-07-22")).toBe("2026-07-22");
     expect(laterDate("2026-07-05", undefined)).toBe("2026-07-05");
     expect(laterDate(undefined, undefined)).toBeUndefined();
+  });
+});
+
+describe("сколько дней прошло", () => {
+  const now = new Date("2026-08-01T12:00:00Z");
+  it("считает полные дни", () => {
+    expect(daysSince("2026-07-22T10:00:00Z", now)).toBe(10);
+  });
+  it("будущее и мусор → 0", () => {
+    expect(daysSince("2026-08-05T00:00:00Z", now)).toBe(0);
+    expect(daysSince("не дата", now)).toBe(0);
   });
 });
 
