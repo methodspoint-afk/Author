@@ -11,9 +11,11 @@ import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
 import { buildNewNotebook, cleanTitle, removeNotebook, removePass } from "../../lib/notebook";
 import { lastVoiceCheckDate, laterDate, readLastAuditDate } from "../../lib/rituals";
 import {
+  axisResultToParsed,
   buildCompassPrompt,
   buildDryOutPrompt,
   buildStrengthenPrompt,
+  parseCompassResponse,
   parsePromptResponse,
 } from "../../lib/prompts";
 import { readCollection, writeCollection } from "../../lib/storage";
@@ -165,6 +167,7 @@ export async function createPass(
       compassTitle: compass.title,
       compassKnowledge,
       nativeGenre: compass.nativeGenre,
+      axes: compass.axes,
       ...(targetGenre !== "" && { targetGenre }),
     });
     label = `Наставник: ${compass.title}`;
@@ -276,7 +279,23 @@ export async function submitPassResponse(
   if (pass === undefined) return { error: "Проход не найден." };
 
   pass.rawResponse = raw;
-  const parsed = parsePromptResponse(raw);
+
+  // Линза «Сверить» — осевой разбор: парсим блоки [ОСЬ N]/[ГЛАВНОЕ], оценки
+  // складываем в axisResult (для показа и будущей осевой дельты), а плоский
+  // parsedResult синтезируем, чтобы сводка и изыскания продолжали работать.
+  let parsed: Record<string, string> | undefined;
+  let axisResult: Pass["axisResult"];
+  if (pass.type === "mentor-compass" && pass.compassId !== undefined) {
+    const compass = getCompass(pass.compassId);
+    const axisParsed =
+      compass !== undefined ? parseCompassResponse(raw, compass.axes) : undefined;
+    if (axisParsed !== undefined) {
+      axisResult = axisParsed.axes;
+      parsed = axisResultToParsed(axisParsed);
+    }
+  } else {
+    parsed = parsePromptResponse(raw);
+  }
 
   if (parsed === undefined) {
     pass.lastParseFailed = true;
@@ -289,6 +308,7 @@ export async function submitPassResponse(
   }
 
   pass.parsedResult = parsed;
+  if (axisResult !== undefined) pass.axisResult = axisResult;
   pass.status = "completed";
   pass.completedAt = new Date().toISOString();
   pass.lastParseFailed = false;

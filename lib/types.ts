@@ -39,6 +39,21 @@ export interface Notebook {
   shelvedAt?: string; // на полке
 }
 
+/**
+ * Оценка одной оси наставника (линза «Сверить», ТЗ §5.3).
+ * Оси — грани мастерства; по каждой наставник называет состояние фрагмента,
+ * что видно (с примером) и шаг-направление (вопрос автору, не переписывание).
+ */
+export type AxisState = "сильная сторона" | "зона роста" | "в норме";
+
+export interface AxisAssessment {
+  key: string; // CompassAxis.key — привязка к оси наставника (для дельты)
+  label: string; // человекочитаемое имя оси
+  state: AxisState;
+  seen: string; // что видно именно в этом фрагменте, с примером
+  step: string; // шаг-направление (вопрос); "" если состояние «в норме»
+}
+
 /** Проход — одна сессия диагностики. Всегда живёт в тетради. */
 export interface Pass {
   id: string;
@@ -55,6 +70,7 @@ export interface Pass {
   status: PassStatus;
   rawResponse?: string;
   parsedResult?: Record<string, string> | Record<string, string>[];
+  axisResult?: AxisAssessment[]; // разбор по осям (только mentor-compass)
   completedAt?: string;
   committedPath?: string;
   lastParseFailed?: boolean;
