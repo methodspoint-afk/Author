@@ -1133,6 +1133,19 @@ a {
   margin: 0 0 0.6rem;
 }
 
+.delta-base {
+  margin: -0.3rem 0 0.6rem;
+  font-family: var(--btn);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.delta-grew {
+  color: var(--accent);
+  font-style: italic;
+}
+
 .delta-line {
   display: flex;
   gap: 0.7rem;
