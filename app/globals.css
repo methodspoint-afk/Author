@@ -1211,6 +1211,53 @@ a {
   border-bottom-color: var(--accent);
 }
 
+/* Ссылка «С чего начать» на лендинге */
+.landing-start-link {
+  margin: 0 0 1.6rem;
+  font-family: var(--btn);
+  font-size: 0.9rem;
+}
+.landing-start-link a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+}
+
+/* «С чего начать» — квик-старт */
+.start-page {
+  max-width: 46rem;
+}
+.start-steps {
+  margin: 0.5rem 0 0;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.7rem;
+}
+.start-steps li {
+  color: var(--ink-soft);
+  line-height: 1.6;
+  padding-left: 0.3rem;
+}
+.start-steps strong,
+.version-list strong {
+  color: var(--ink);
+}
+.start-cta {
+  margin-top: 2rem;
+}
+.start-cta a {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--btn);
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 0.7rem 1.3rem;
+}
+.start-cta a:hover {
+  filter: brightness(1.08);
+}
+
 /* Паспорт версии */
 .version-page {
   max-width: 46rem;

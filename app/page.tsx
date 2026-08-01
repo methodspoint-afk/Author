@@ -10,6 +10,9 @@ export default function Home() {
         У каждого писателя должен быть большой удобный стол и вместительный кабинет. Это
         приложение — их электронная версия.
       </p>
+      <p className="landing-start-link">
+        <Link href="/start">Впервые здесь? С чего начать →</Link>
+      </p>
 
       <section className="landing-block">
         <h2>Как это работает</h2>

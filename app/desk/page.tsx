@@ -72,7 +72,10 @@ export default async function DeskPage() {
         <NewNotebookForm />
       </div>
       {active.length === 0 ? (
-        <p className="empty-note">На столе пусто. Заведите новую тетрадь или верните что-то с полки.</p>
+        <p className="empty-note">
+          На столе пусто. Заведите новую тетрадь, верните что-то с полки — или посмотрите,{" "}
+          <Link href="/start">с чего начать</Link>.
+        </p>
       ) : (
         <ul className="notebook-list">
           {active.map((notebook) => {
