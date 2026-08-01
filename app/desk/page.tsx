@@ -86,7 +86,7 @@ export default async function DeskPage() {
                   </span>
                   <span>
                     {notebook.passIds.length}{" "}
-                    {plural(notebook.passIds.length, "проход", "прохода", "проходов")}
+                    {plural(notebook.passIds.length, "разбор", "разбора", "разборов")}
                   </span>
                   {waiting > 0 && (
                     <span className="tag-wait">

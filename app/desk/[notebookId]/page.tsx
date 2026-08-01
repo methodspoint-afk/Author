@@ -38,53 +38,52 @@ export default async function NotebookPage({
   return (
     <>
       <h1>{notebook.title}</h1>
-      <div className="notebook-toolbar">
-        {completedLensCount >= 2 && (
-          <ToolbarActionButton
-            action={createDigest}
-            notebookId={notebook.id}
-            label="Сводка секретаря"
-            pendingLabel="Собираю сводку…"
-          />
-        )}
-        <ToolbarActionButton
-          action={commitToCorpus}
-          notebookId={notebook.id}
-          label={notebook.committedPath !== undefined ? "Обновить в картотеке" : "Внести в картотеку"}
-          pendingLabel={notebook.committedPath !== undefined ? "Обновляю…" : "Вношу…"}
-        />
-        {notebook.shelvedAt === undefined ? (
-          <form action={shelveNotebook}>
-            <input type="hidden" name="notebookId" value={notebook.id} />
-            <button type="submit" className="toolbar-button">
-              На полку
-            </button>
-          </form>
-        ) : (
-          <form action={reopenNotebook}>
-            <input type="hidden" name="notebookId" value={notebook.id} />
-            <button type="submit" className="toolbar-button">
-              Вернуть на стол
-            </button>
-          </form>
-        )}
-        {notebook.committedPath !== undefined && (
-          <span className="tag-committed">в картотеке</span>
-        )}
-      </div>
-      <div className="export-bar">
-        <span className="export-label">Забрать текст:</span>
-        <a className="export-link" href={`/desk/${notebook.id}/export?format=rtf`}>
-          Word
-        </a>
-        <Link className="export-link" href={`/desk/${notebook.id}/print`}>
-          PDF
-        </Link>
-        <a className="export-link" href={`/desk/${notebook.id}/export?format=txt`}>
-          TXT
-        </a>
-      </div>
-      <NotebookControls notebookId={notebook.id} title={notebook.title} />
+      {/* Главное — линзы (в тетради справа). Вспомогательное убрано под «Ещё…»,
+          чтобы не отвлекать: картотека, полка, экспорт, переименование, удаление. */}
+      <details className="more-menu">
+        <summary>Ещё…</summary>
+        <div className="more-menu-body">
+          <div className="notebook-toolbar">
+            <ToolbarActionButton
+              action={commitToCorpus}
+              notebookId={notebook.id}
+              label={notebook.committedPath !== undefined ? "Обновить в картотеке" : "Внести в картотеку"}
+              pendingLabel={notebook.committedPath !== undefined ? "Обновляю…" : "Вношу…"}
+            />
+            {notebook.shelvedAt === undefined ? (
+              <form action={shelveNotebook}>
+                <input type="hidden" name="notebookId" value={notebook.id} />
+                <button type="submit" className="toolbar-button">
+                  На полку
+                </button>
+              </form>
+            ) : (
+              <form action={reopenNotebook}>
+                <input type="hidden" name="notebookId" value={notebook.id} />
+                <button type="submit" className="toolbar-button">
+                  Вернуть на стол
+                </button>
+              </form>
+            )}
+            {notebook.committedPath !== undefined && (
+              <span className="tag-committed">в картотеке</span>
+            )}
+          </div>
+          <div className="export-bar">
+            <span className="export-label">Забрать текст:</span>
+            <a className="export-link" href={`/desk/${notebook.id}/export?format=rtf`}>
+              Word
+            </a>
+            <Link className="export-link" href={`/desk/${notebook.id}/print`}>
+              PDF
+            </Link>
+            <a className="export-link" href={`/desk/${notebook.id}/export?format=txt`}>
+              TXT
+            </a>
+          </div>
+          <NotebookControls notebookId={notebook.id} title={notebook.title} />
+        </div>
+      </details>
       <div className="notebook-page">
         <FragmentPane
           key={versions.length}
@@ -108,9 +107,20 @@ export default async function NotebookPage({
             allowed={law.allowed}
             {...(law.reason !== undefined && { reason: law.reason })}
           />
-          <h2>Проходы</h2>
+          {completedLensCount >= 2 && (
+            <div className="digest-offer">
+              <ToolbarActionButton
+                action={createDigest}
+                notebookId={notebook.id}
+                label="Сводка секретаря"
+                pendingLabel="Собираю сводку…"
+              />
+              <p className="pane-hint">Свести все разборы этой тетради в один общий итог.</p>
+            </div>
+          )}
+          <h2>Разборы</h2>
           {passes.length === 0 ? (
-            <p className="empty-note">Проходов пока не было.</p>
+            <p className="empty-note">Разборов пока нет — выберите линзу выше.</p>
           ) : (
             <div className="pass-list">
               {passes.map((pass, index) => (

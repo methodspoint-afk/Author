@@ -504,7 +504,7 @@ export async function createDigest(
   await writeCollection("passes.json", passes);
   await writeCollection("notebooks.json", notebooks);
   refresh(notebookId);
-  return { ok: true, message: "Сводка готова — она ниже, в проходах." };
+  return { ok: true, message: "Сводка готова — она ниже, среди разборов." };
 }
 
 /** Внести тетрадь в картотеку: markdown-кейс в learning/corpus/. */
