@@ -51,6 +51,7 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
   return (
     <div className="lens-block">
       <h2>Линзы</h2>
+      <p className="pane-hint">Базовый круг «Прописи»: Не высушить → Сверить → Усилить.</p>
       <div className="lens-buttons">
         {LENSES.map((entry) => (
           <button

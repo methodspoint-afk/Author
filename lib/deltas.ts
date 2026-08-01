@@ -71,7 +71,7 @@ export function summarizeDeltaTable(table: DeltaTable): DeltaSummary {
 
     if (/повыш|сильн|образц|окреп/u.test(dynamics)) {
       wins.push(clip(observation));
-    } else if (base.includes("точка роста") || /следить|качается|проверить/u.test(dynamics)) {
+    } else if (base.includes("точка роста") || /следить|качается|колеблется|проверить/u.test(dynamics)) {
       toWork.push(clip(observation));
     }
   }
