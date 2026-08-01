@@ -49,7 +49,7 @@ export default async function VoicePage() {
       <h2>Сверка голоса</h2>
       <p className="empty-note">
         Лёгкое зеркало: секретарь смотрит на ваши правки «было ↔ стало» и называет
-        2–3 черты — что уже звучит уверенно, а что ещё качается. Выводы делаете вы.
+        2–3 черты — что уже звучит уверенно, а что ещё колеблется. Выводы делаете вы.
       </p>
       {activeCheck !== undefined ? (
         <div className="pass-list inquiries-list">
