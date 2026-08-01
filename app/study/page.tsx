@@ -52,10 +52,6 @@ export default async function StudyPage() {
           <h2>Полка</h2>
           <p>Тетрадей на полке: {shelved}. Завершённое — не обязательно опубликованное.</p>
         </Link>
-        <Link href="/study/azbuka" className="study-card">
-          <h2>Азбука мастерской</h2>
-          <p>Короткий словарь слов, которыми говорит мастерская.</p>
-        </Link>
       </div>
     </>
   );

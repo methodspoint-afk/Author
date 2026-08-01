@@ -10,6 +10,7 @@ import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
 import { daysSince } from "../../../lib/rituals";
+import { RETURN_OPENERS, pickLine } from "../../../lib/secretaryLines";
 import { readCollection } from "../../../lib/storage";
 import type { FragmentVersion } from "../../../lib/types";
 import { commitToCorpus, createDigest, reopenNotebook, shelveNotebook } from "../actions";
@@ -49,7 +50,10 @@ export default async function NotebookPage({
       <h1>{notebook.title}</h1>
       {away >= 3 && (
         <SecretaryNote id={`return-${notebook.id}-${notebook.updatedAt}`}>
-          Вы не были в этой тетради {away} {plural(away, "день", "дня", "дней")}.{" "}
+          {pickLine(RETURN_OPENERS, `${notebook.id}-${notebook.updatedAt}`).replace(
+            "{days}",
+            `${away} ${plural(away, "день", "дня", "дней")}`,
+          )}{" "}
           {lastVersion?.note !== undefined && `В прошлый раз вы отметили: «${lastVersion.note}». `}
           {nextStep}
         </SecretaryNote>

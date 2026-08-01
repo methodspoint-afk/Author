@@ -1,6 +1,7 @@
 import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import SecretaryNote from "../../components/SecretaryNote";
+import { RHYTHM_LINES, SVERKA_LINES, pickLine } from "../../lib/secretaryLines";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { findPassToClose } from "../../lib/iteration";
 import { auditReminder, lastVoiceCheckDate, laterDate, readLastAuditDate, workRhythm } from "../../lib/rituals";
@@ -56,15 +57,18 @@ export default async function DeskPage() {
       </p>
       {reminder.due ? (
         <SecretaryNote id={`audit-${lastCheck ?? "none"}-${reminder.count}`}>
-          С последней сверки накопилось {reminder.count}{" "}
-          {plural(reminder.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}{" "}
-          — пора сверить <Link href="/study/voice">голос</Link>.
+          {pickLine(SVERKA_LINES, `${lastCheck ?? "none"}-${reminder.count}`).replace(
+            "{count}",
+            `${reminder.count} ${plural(reminder.count, "правка", "правки", "правок")}`,
+          )}{" "}
+          <Link href="/study/voice">Сверить голос →</Link>
         </SecretaryNote>
       ) : (
         rhythm.due && (
           <SecretaryNote id={`rhythm-${rhythm.windowDays}-${rhythm.count}`}>
-            За последние {rhythm.windowDays} дней — {rhythm.count}{" "}
-            {plural(rhythm.count, "зафиксированная правка", "зафиксированные правки", "зафиксированных правок")}.
+            {pickLine(RHYTHM_LINES, `${rhythm.windowDays}-${rhythm.count}`)
+              .replace("{days}", `${rhythm.windowDays} ${plural(rhythm.windowDays, "день", "дня", "дней")}`)
+              .replace("{count}", `${rhythm.count} ${plural(rhythm.count, "правка", "правки", "правок")}`)}
           </SecretaryNote>
         )
       )}
