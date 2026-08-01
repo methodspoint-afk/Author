@@ -158,7 +158,7 @@ export async function createPass(
         "utf8",
       );
     } catch {
-      return { error: `Файл компаса не найден: ${compass.knowledgePath}` };
+      return { error: `Файл наставника не найден: ${compass.knowledgePath}` };
     }
     promptText = buildCompassPrompt({
       ...base,
