@@ -4,7 +4,7 @@
 
 :root {
   /* палитра: средний беж, чернила горького шоколада, бирюза, карамель */
-  --page: #e7d9ba;         /* глубокий фон страницы — для слоистости (тема «Тёплый кабинет») */
+  --page: #ece4cf;         /* фон страницы — мягкий, менее насыщенный; слоистость держат тени */
   --paper: #f1e8d2;        /* средний беж — поверхности, кнопки */
   --surface: #faf5e8;      /* окна и поля ввода — самое светлое */
   --card: #f8f1de;         /* карточки — светлее фона, «приподняты» */
@@ -550,7 +550,7 @@ a {
 
 .study-card {
   display: block;
-  background: var(--card);
+  background: var(--accent-soft);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 1.1rem 1.3rem;
@@ -1175,7 +1175,7 @@ a {
 }
 .landing-door {
   display: block;
-  background: var(--card);
+  background: var(--accent-soft);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.3rem 1.4rem;
@@ -1279,7 +1279,7 @@ a {
   gap: 1rem;
 }
 .version-milestone {
-  background: var(--card);
+  background: var(--accent-soft);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.1rem 1.3rem;
@@ -1369,13 +1369,14 @@ a {
 .secretary-plashka-badge {
   flex-shrink: 0;
   font-family: var(--btn);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
+  font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #20180f;
+  color: #1a140a;
   background: var(--amber);
   border-radius: 6px;
-  padding: 0.2rem 0.5rem;
+  padding: 0.22rem 0.55rem;
   margin-top: 0.1rem;
 }
 
