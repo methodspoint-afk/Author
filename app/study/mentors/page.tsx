@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { allMentorGrowth } from "../../../lib/axisDelta";
 import { ACTIVE_COMPASSES, COMPASSES, isCompassActive } from "../../../lib/compasses";
 import { getAllPasses } from "../../../lib/data";
-import { readDeltaTables, summarizeDeltaTable } from "../../../lib/deltas";
 import { mentorEngagement } from "../../../lib/mentors";
 
 export const dynamic = "force-dynamic";
@@ -15,22 +15,36 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
 // Полнота заполнения компаса: семь делений — по числу завершённых проходов.
 const FILL_SLOTS = 7;
 
+// Имя оси без ведущего номера («1. Деталь…» → «Деталь…»).
+function axisName(label: string): string {
+  return label.replace(/^\d+\.\s*/u, "");
+}
+
+// Русское склонение по числу: 1 сверка · 2 сверки · 5 сверок.
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  if (mod100 >= 11 && mod100 <= 14) return many;
+  if (mod10 === 1) return one;
+  if (mod10 >= 2 && mod10 <= 4) return few;
+  return many;
+}
+
 export default async function MentorsPage() {
-  const [passes, deltas] = await Promise.all([getAllPasses(), readDeltaTables()]);
+  const passes = await getAllPasses();
   const engagement = mentorEngagement(passes);
 
   const active = ACTIVE_COMPASSES;
   const upcoming = COMPASSES.filter((compass) => !isCompassActive(compass.id));
 
-  // Дельты — «как двигается голос у наставника»; задействованные показываем первыми.
+  // Рост голоса — из накопленных разборов по осям (Pass.axisResult), не из
+  // рукописных таблиц. Задействованных наставников показываем первыми.
   const activeIds = new Set(active.map((compass) => compass.id));
-  const sortedDeltas = [...deltas].sort((a, b) => {
+  const growth = allMentorGrowth(passes).sort((a, b) => {
     const aActive = activeIds.has(a.compass.id) ? 0 : 1;
     const bActive = activeIds.has(b.compass.id) ? 0 : 1;
     return aActive - bActive;
   });
-  // Наружу — сводка без осей (оси прячем), а не сырая таблица.
-  const deltaSummaries = sortedDeltas.map(summarizeDeltaTable);
 
   return (
     <>
@@ -72,23 +86,32 @@ export default async function MentorsPage() {
         })}
       </div>
 
-      {/* Как растёт голос — сводка наблюдений без раскрытия осей (оси — УТП). */}
-      {deltaSummaries.length > 0 && (
+      {/* Как растёт голос — из накопленных разборов по осям. «Спрятанно, с
+          базой»: под каждым наставником видно, на скольких сверках основано. */}
+      {growth.length > 0 && (
         <section className="mentor-deltas">
           <h2>Как растёт ваш голос</h2>
           <p className="empty-note">
-            По следам линзы «Сверить» секретарь наблюдает, куда движется ваш голос: что уже
-            окрепло и над чем стоит поработать. Копится от круга к кругу.
+            По следам линзы «Сверить» видно, куда движется ваш голос: что уже окрепло и над
+            чем стоит поработать. Копится от круга к кругу — чем больше сверок, тем вернее.
           </p>
-          {deltaSummaries.map(({ compass, wins, toWork }) => (
+          {growth.map(({ compass, passCount, notebookCount, strengthened, toWork }) => (
             <div key={compass.id} className="delta-summary">
               <h3>{compass.title}</h3>
-              {wins.length > 0 && (
+              <p className="delta-base">
+                Основано на {passCount} {plural(passCount, "сверке", "сверках", "сверках")} · по{" "}
+                {notebookCount} {plural(notebookCount, "тексту", "текстам", "текстам")}
+              </p>
+              {strengthened.length > 0 && (
                 <div className="delta-line delta-win">
                   <span className="delta-tag">Окрепло</span>
                   <ul>
-                    {wins.map((text, index) => (
-                      <li key={index}>{text}</li>
+                    {strengthened.map((axis) => (
+                      <li key={axis.key}>
+                        <strong>{axisName(axis.label)}</strong>
+                        {axis.grew && <span className="delta-grew"> — выросло из зоны роста</span>}
+                        {`. ${axis.seen}`}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -97,14 +120,17 @@ export default async function MentorsPage() {
                 <div className="delta-line delta-work">
                   <span className="delta-tag">Над чем поработать</span>
                   <ul>
-                    {toWork.map((text, index) => (
-                      <li key={index}>{text}</li>
+                    {toWork.map((axis) => (
+                      <li key={axis.key}>
+                        <strong>{axisName(axis.label)}</strong>
+                        {`. ${axis.seen}`}
+                      </li>
                     ))}
                   </ul>
                 </div>
               )}
-              {wins.length === 0 && toWork.length === 0 && (
-                <p className="empty-note">Наблюдения копятся — пройдите ещё сверку.</p>
+              {strengthened.length === 0 && toWork.length === 0 && (
+                <p className="empty-note">Пока всё в норме — наблюдения копятся.</p>
               )}
             </div>
           ))}
