@@ -19,10 +19,11 @@
   --gold: #a4964f;         /* Hilton 11 — оливково-золотой (быв. карамель) */
   --amber: #cba23c;        /* янтарь ярче и теплее — искра (бейдж, счётчик) */
   --rust: #a85a34;         /* Calvados 786 — ржавая искра (крайне дозированно) */
+  --chocolate: #2b2416;    /* горький шоколад — чердак, тултипы, ободки активации */
   --ok: #4a7a4e;           /* завершено (зелёный, приглушён) */
   --wait: #a4964f;         /* ждёт (оливково-золотой) */
-  --chrome: #20262a;       /* Hilton 4 — «чердак», тёмная полоса шапки */
-  --chrome-ink: #e3ddcc;   /* текст на чердаке */
+  --chrome: #2b2416;       /* «чердак» — горький шоколад (по просьбе автора) */
+  --chrome-ink: #e6dfce;   /* текст на чердаке */
   /* статусы: серый · золото · синий · ржавый · зелёный — не спутать издалека */
   --st-draft: #86847a;
   --st-mentor: #b7a24f;
@@ -155,6 +156,17 @@ h1 {
   text-wrap: balance;
 }
 
+/* Искра ржавого (Calvados) — короткий штрих под заголовком на каждой странице. */
+h1::after {
+  content: "";
+  display: block;
+  width: 2.4rem;
+  height: 3px;
+  margin-top: 0.5rem;
+  background: var(--rust);
+  border-radius: 2px;
+}
+
 h2 {
   font-family: var(--serif);
   font-size: 1.3rem;
@@ -257,7 +269,7 @@ a {
 
 .version-chip[data-active="true"] {
   background: var(--accent-soft);
-  border-color: var(--accent);
+  border-color: var(--chocolate);
   color: var(--ink);
 }
 
@@ -438,7 +450,7 @@ a {
 }
 
 .lens-button[data-active="true"] {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
   background: var(--accent-soft);
 }
 
@@ -568,7 +580,7 @@ a {
 
 .study-card {
   display: block;
-  background: var(--accent-soft);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 1.1rem 1.3rem;
@@ -577,7 +589,7 @@ a {
 }
 
 .study-card:hover {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
 }
 
 .study-card p {
@@ -594,13 +606,10 @@ a {
 }
 
 .gloss-pop {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 0.4rem);
   z-index: 60;
   width: max-content;
   max-width: 22rem;
-  background: var(--chrome);
+  background: var(--chocolate);
   color: var(--chrome-ink);
   font-family: var(--book);
   font-size: 0.85rem;
@@ -653,7 +662,7 @@ a {
 }
 
 .toolbar-button:hover {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
 }
 
 .toolbar-button:disabled {
@@ -682,9 +691,11 @@ a {
 }
 .more-menu > summary::before {
   content: "⋯ ";
+  color: var(--rust);
+  font-weight: 700;
 }
 .more-menu[open] > summary {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
   color: var(--accent);
 }
 .more-menu-body {
@@ -731,7 +742,7 @@ a {
   font-family: var(--btn);
 }
 .export-link:hover {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
 }
 
 /* Печатный вид чистовика + сохранение в PDF печатью браузера */
@@ -958,7 +969,7 @@ a {
 }
 
 .mentor-card[data-active="true"] {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
 }
 
 /* Будущие наставники: обозначены, но обесцвечены — витрина следующих версий. */
@@ -1301,7 +1312,7 @@ a {
 }
 .landing-door {
   display: block;
-  background: var(--accent-soft);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.3rem 1.4rem;
@@ -1311,7 +1322,7 @@ a {
   transition: border-color 0.2s;
 }
 .landing-door:hover {
-  border-color: var(--accent);
+  border-color: var(--chocolate);
 }
 .landing-door h2 {
   font-family: var(--serif);
