@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GlossaryTerm from "../../components/GlossaryTerm";
 import { ACTIVE_COMPASS_IDS, COMPASSES } from "../../lib/compasses";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { readDeltaTables } from "../../lib/deltas";
@@ -22,13 +23,13 @@ export default async function StudyPage() {
       <h1>Кабинет</h1>
       <div className="study-grid">
         <Link href="/study/card-index" className="study-card">
-          <h2>Картотека</h2>
+          <h2><GlossaryTerm term="Картотека">Картотека</GlossaryTerm></h2>
           <p>
             Внесённых тетрадей: {committed}. Корпус — материал для аудита и голоса.
           </p>
         </Link>
         <Link href="/study/inquiries" className="study-card">
-          <h2>Изыскания</h2>
+          <h2><GlossaryTerm term="Изыскание">Изыскания</GlossaryTerm></h2>
           <p>
             Справок: {inquiries.length}
             {waitingInquiries > 0 && ` (в работе: ${waitingInquiries})`}. Секретарь наводит справки
@@ -36,20 +37,20 @@ export default async function StudyPage() {
           </p>
         </Link>
         <Link href="/study/voice" className="study-card">
-          <h2>Голос</h2>
+          <h2><GlossaryTerm term="Голос">Голос</GlossaryTerm></h2>
           <p>
             Портрет вашего стиля: сверка голоса и подтверждённые механики.
           </p>
         </Link>
         <Link href="/study/mentors" className="study-card">
-          <h2>Карта наставников</h2>
+          <h2><GlossaryTerm term="Наставник">Карта наставников</GlossaryTerm></h2>
           <p>
             В деле {ACTIVE_COMPASS_IDS.length} из {COMPASSES.length} наставников; замеров голоса:{" "}
-            {deltas.length}. Как движется голос — по их осям.
+            {deltas.length}. Как растёт голос — по следам сверок.
           </p>
         </Link>
         <Link href="/study/shelf" className="study-card">
-          <h2>Полка</h2>
+          <h2><GlossaryTerm term="Полка">Полка</GlossaryTerm></h2>
           <p>Тетрадей на полке: {shelved}. Завершённое — не обязательно опубликованное.</p>
         </Link>
       </div>

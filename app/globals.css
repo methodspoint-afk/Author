@@ -586,6 +586,33 @@ a {
   margin: 0.4rem 0 0;
 }
 
+/* Подсказка из Азбуки при наведении (тултип); слово помечено пунктиром */
+.gloss-term {
+  position: relative;
+  border-bottom: 1px dotted var(--accent);
+  cursor: help;
+}
+
+.gloss-pop {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.4rem);
+  z-index: 60;
+  width: max-content;
+  max-width: 22rem;
+  background: var(--chrome);
+  color: var(--chrome-ink);
+  font-family: var(--book);
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  box-shadow: 0 6px 20px rgba(32, 38, 42, 0.25);
+}
+
 /* Азбука мастерской — глоссарий для автора */
 .glossary-group {
   margin-bottom: 1.6rem;
