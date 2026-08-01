@@ -73,10 +73,10 @@ export default async function MentorsPage() {
       {/* Дельты наставников — как двигается голос (переехало сюда с «Голоса»). */}
       {sortedDeltas.length > 0 && (
         <section className="mentor-deltas">
-          <h2>Как двигается голос</h2>
+          <h2>Дельта-таблица: как растёт ваш голос</h2>
           <p className="empty-note">
             Замеры по осям каждого наставника: где голос силён, где точка роста, куда
-            сдвинулся за круги правок. Заполняются аудитами.
+            сдвинулся за круги правок. Заполняются сверками.
           </p>
           {sortedDeltas.map(({ compass, header, rows }) => (
             <details
