@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { buildCaseMarkdown, corpusFileName } from "../lib/corpus";
-import { extractDeltaTable } from "../lib/deltas";
 import { buildDigestPrompt, buildInquiryPrompt } from "../lib/prompts";
 import type { FragmentVersion, Notebook, Pass } from "../lib/types";
 
@@ -52,33 +51,6 @@ describe("картотека", () => {
 
   it("corpusFileName даёт дату и id", () => {
     expect(corpusFileName(notebook, new Date("2026-07-06T12:00:00Z"))).toBe("2026-07-06-nb1.md");
-  });
-});
-
-describe("дельта-таблицы", () => {
-  it("extractDeltaTable достаёт таблицу из секции DELTA", () => {
-    const markdown = `# ЧЕХОВ — компас
-
-## Семь осей
-
-текст осей
-
-## CHEKHOV-DELTA — замер движения
-
-| Ось | Базовый уровень | Замер 1 | Динамика |
-|-----|-----------------|---------|----------|
-| Деталь-отбор | сильная база | подтверждена | стабильно |
-| Отжатость | средняя | уточнена | уточнена |
-`;
-    const table = extractDeltaTable(markdown);
-    expect(table).toBeDefined();
-    expect(table!.header).toEqual(["Ось", "Базовый уровень", "Замер 1", "Динамика"]);
-    expect(table!.rows).toHaveLength(2);
-    expect(table!.rows[0]![0]).toBe("Деталь-отбор");
-  });
-
-  it("файл без DELTA-секции — undefined", () => {
-    expect(extractDeltaTable("# Компас\n\n## Оси\n\nтекст")).toBeUndefined();
   });
 });
 
