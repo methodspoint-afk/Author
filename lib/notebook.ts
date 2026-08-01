@@ -61,9 +61,9 @@ export function removePass(
   now: string,
 ): RemovePassResult {
   const pass = passes.find((entry) => entry.id === passId);
-  if (pass === undefined) return { ok: false, error: "Проход не найден." };
+  if (pass === undefined) return { ok: false, error: "Разбор не найден." };
   if (pass.status === "completed") {
-    return { ok: false, error: "Разбор уже получен — такой проход не удаляется." };
+    return { ok: false, error: "Разбор уже получен — его нельзя удалить." };
   }
 
   const nextPasses = passes.filter((entry) => entry.id !== passId);

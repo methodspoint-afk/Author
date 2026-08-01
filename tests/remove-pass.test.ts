@@ -43,7 +43,7 @@ describe("удаление прохода", () => {
     const notebooks = [makeNotebook("nb1", ["v1"], ["p1"])];
     const passes = [makePass("p1", "nb1", "completed")];
     const result = removePass(notebooks, passes, "p1", now);
-    expect(result).toEqual({ ok: false, error: "Разбор уже получен — такой проход не удаляется." });
+    expect(result).toEqual({ ok: false, error: "Разбор уже получен — его нельзя удалить." });
   });
 
   it("тетрадь-призрак (изыскание без версий) уходит вместе с проходом", () => {
@@ -71,6 +71,6 @@ describe("удаление прохода", () => {
   });
 
   it("несуществующий проход — ошибка", () => {
-    expect(removePass([], [], "нет", now)).toEqual({ ok: false, error: "Проход не найден." });
+    expect(removePass([], [], "нет", now)).toEqual({ ok: false, error: "Разбор не найден." });
   });
 });

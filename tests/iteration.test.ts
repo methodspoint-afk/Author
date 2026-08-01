@@ -35,13 +35,13 @@ describe("закон итерации", () => {
   it("депеша ждёт ответа — нельзя", () => {
     const check = checkIterationLaw(notebook(["p1"]), [pass("p1", "dispatched")], [version("v1")]);
     expect(check.allowed).toBe(false);
-    expect(check.reason).toContain("ждёт ответа");
+    expect(check.reason).toContain("вставьте его ответ");
   });
 
   it("диагноз получен, версия не зафиксирована — нельзя", () => {
     const check = checkIterationLaw(notebook(["p1"]), [pass("p1", "completed")], [version("v1")]);
     expect(check.allowed).toBe(false);
-    expect(check.reason).toContain("зафиксировать новую версию");
+    expect(check.reason).toContain("сохраните новую версию");
   });
 
   it("версия закрыла проход — можно дальше", () => {

@@ -613,6 +613,53 @@ a {
   cursor: progress;
 }
 
+/* «Ещё…» — вспомогательное убрано с глаз, но под рукой */
+.more-menu {
+  margin: -0.5rem 0 1.25rem;
+}
+.more-menu > summary {
+  cursor: pointer;
+  display: inline-block;
+  font-family: var(--btn);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.3rem 0.9rem;
+  list-style: none;
+}
+.more-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.more-menu > summary::before {
+  content: "⋯ ";
+}
+.more-menu[open] > summary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.more-menu-body {
+  margin-top: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  display: grid;
+  gap: 0.9rem;
+}
+.more-menu-body .notebook-toolbar,
+.more-menu-body .export-bar {
+  margin: 0;
+}
+
+/* Предложение сводки — рядом с разборами, с короткой подписью */
+.digest-offer {
+  margin: 1rem 0 0.5rem;
+}
+.digest-offer .pane-hint {
+  margin-top: 0.3rem;
+}
+
 /* Экспорт тетради: забрать текст в Word / PDF / TXT */
 .export-bar {
   display: flex;

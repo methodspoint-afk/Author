@@ -27,7 +27,7 @@ export default async function CardIndexPage() {
               <Link href={`/desk/${notebook.id}`}>{notebook.title}</Link>
               <div className="notebook-meta">
                 <span>
-                  {notebook.versionIds.length} версий · {notebook.passIds.length} проходов
+                  {notebook.versionIds.length} версий · {notebook.passIds.length} разборов
                 </span>
               </div>
             </li>
