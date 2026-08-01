@@ -4,9 +4,11 @@
 
 :root {
   /* палитра: средний беж, чернила горького шоколада, бирюза, карамель */
-  --paper: #f1e8d2;        /* фон страницы */
-  --surface: #faf5e8;      /* окна и поля ввода */
-  --card: #f6efdd;         /* карточки */
+  --page: #e7d9ba;         /* глубокий фон страницы — для слоистости (тема «Тёплый кабинет») */
+  --paper: #f1e8d2;        /* средний беж — поверхности, кнопки */
+  --surface: #faf5e8;      /* окна и поля ввода — самое светлое */
+  --card: #f8f1de;         /* карточки — светлее фона, «приподняты» */
+  --shadow: 0 4px 16px rgba(43, 36, 22, 0.09);  /* мягкая тень карточек */
   --ink: #2b2416;          /* текст — горький шоколад */
   --ink-soft: #7c6f52;     /* приглушённый */
   --line: #cfc09a;         /* линии */
@@ -14,6 +16,7 @@
   --accent-ink: #faf5e8;   /* текст на бирюзе */
   --accent-soft: #e2ead9;  /* светлая бирюза-беж для активных состояний */
   --gold: #b98a2e;         /* карамель */
+  --amber: #d9a406;        /* янтарь — драгоценный акцент (из варианта В3) */
   --ok: #2e7d44;           /* завершено (зелёный) */
   --wait: #b98a2e;         /* ждёт (карамель) */
   --chrome: #221c10;       /* «чердак» — тёмная полоса шапки */
@@ -36,7 +39,7 @@
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--page);
   color: var(--ink);
   font-family: var(--serif);
   font-size: 16px;
@@ -407,7 +410,7 @@ a {
   align-items: baseline;
   gap: 0.6rem;
   border: 1px solid var(--line);
-  background: var(--paper);
+  background: var(--surface);
   border-radius: 8px;
   padding: 0.5rem 0.8rem;
   font: inherit;
@@ -1369,8 +1372,8 @@ a {
   font-size: 0.72rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent-ink);
-  background: var(--accent);
+  color: #20180f;
+  background: var(--amber);
   border-radius: 6px;
   padding: 0.2rem 0.5rem;
   margin-top: 0.1rem;
@@ -1400,4 +1403,17 @@ a {
 
 .secretary-plashka-close:hover {
   color: var(--accent);
+}
+
+/* Тема «Тёплый кабинет»: карточки приподняты мягкой тенью над глубоким фоном.
+   Лечим «плоскую бежевую гамму» — глубина и слои, текст остаётся героем. */
+.notebook-card,
+.fragment-pane,
+.pass-card,
+.study-card,
+.lens-block,
+.version-milestone,
+.more-menu-body,
+.mentor-card[data-active="true"] {
+  box-shadow: var(--shadow);
 }
