@@ -5,7 +5,7 @@ import { commitVersion } from "../app/desk/actions";
 import { diffWords } from "../lib/diff";
 import { draftKey, shouldRestoreDraft } from "../lib/draft";
 import { formatDelta, pathMilestones, pathSummary } from "../lib/path";
-import { textStats } from "../lib/textStats";
+import { FRAGMENT_CHAR_LIMIT, textStats } from "../lib/textStats";
 
 // Окно текста — святое (ТЗ §5.1, §11.1). Текст в центре, редактируемый;
 // во время правки — никаких подсказок и подчёркиваний. Незафиксированная
@@ -125,8 +125,21 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
         />
         {draft.trim() !== "" && (
           <p className="text-stats">
-            слов: {textStats(draft).words.toLocaleString("ru-RU")} · знаков:{" "}
-            {textStats(draft).chars.toLocaleString("ru-RU")}
+            <span className="stat-chip">
+              слов: {textStats(draft).words.toLocaleString("ru-RU")}
+            </span>
+            <span className="stat-chip">
+              знаков: {textStats(draft).chars.toLocaleString("ru-RU")} из{" "}
+              {FRAGMENT_CHAR_LIMIT.toLocaleString("ru-RU")}
+            </span>
+            <span
+              className="stat-chip stat-limit"
+              data-low={FRAGMENT_CHAR_LIMIT - textStats(draft).chars < FRAGMENT_CHAR_LIMIT * 0.1}
+            >
+              {FRAGMENT_CHAR_LIMIT - textStats(draft).chars >= 0
+                ? `осталось ${(FRAGMENT_CHAR_LIMIT - textStats(draft).chars).toLocaleString("ru-RU")}`
+                : `сверх лимита: ${(textStats(draft).chars - FRAGMENT_CHAR_LIMIT).toLocaleString("ru-RU")}`}
+            </span>
           </p>
         )}
         {changed && (
@@ -150,7 +163,9 @@ export default function FragmentPane({ notebookId, versions }: FragmentPaneProps
 
       {/* Вспомогательное — под окном, свёрнуто: что изменилось, было→стало, путь. */}
       {selected?.note !== undefined && selected.note !== "перенесено из v1" && (
-        <p className="version-note">Что изменилось: {selected.note}</p>
+        <p className="version-note">
+          <b>Что изменилось:</b> {selected.note}
+        </p>
       )}
 
       {selected !== undefined && <WasBecame versions={versions} selectedId={selected.id} />}

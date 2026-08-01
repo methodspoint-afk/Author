@@ -17,7 +17,8 @@
   --accent-ink: #fcfaf4;   /* текст на петроле */
   --accent-soft: #d2e7e0;  /* разбелённый петроль — плашки и активные состояния */
   --gold: #a4964f;         /* Hilton 11 — оливково-золотой (быв. карамель) */
-  --amber: #cba23c;        /* янтарь ярче и теплее — искра (бейдж) */
+  --amber: #cba23c;        /* янтарь ярче и теплее — искра (бейдж, счётчик) */
+  --rust: #a85a34;         /* Calvados 786 — ржавая искра (крайне дозированно) */
   --ok: #4a7a4e;           /* завершено (зелёный, приглушён) */
   --wait: #a4964f;         /* ждёт (оливково-золотой) */
   --chrome: #20262a;       /* Hilton 4 — «чердак», тёмная полоса шапки */
@@ -246,7 +247,7 @@ a {
 
 .version-chip {
   border: 1px solid var(--line);
-  background: var(--paper);
+  background: var(--surface);
   border-radius: 999px;
   padding: 0.15rem 0.75rem;
   font-size: 0.85rem;
@@ -260,10 +261,20 @@ a {
   color: var(--ink);
 }
 
+/* «Что изменилось» — важная смысловая пометка: выворотка от главной кнопки
+   (светлый фон + петролевый контур), с петролевой меткой. */
 .version-note {
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-  margin: 0 0 0.75rem;
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.92rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  margin: 0 0 0.9rem;
+}
+
+.version-note b {
+  color: var(--accent);
 }
 
 .fragment-text {
@@ -485,9 +496,15 @@ a {
   gap: 0.5rem;
 }
 
+/* «Передать депешу» — важное вторичное: выворотка от главной кнопки. */
 .pass-actions .copy-button {
-  background: var(--card);
+  background: var(--surface);
+  border: 1px solid var(--accent);
   color: var(--accent);
+}
+
+.pass-actions .copy-button:hover {
+  background: var(--accent-soft);
 }
 
 .pass-actions form {
@@ -599,7 +616,7 @@ a {
 
 .toolbar-button {
   border: 1px solid var(--line);
-  background: var(--card);
+  background: var(--surface);
   color: var(--accent);
   border-radius: 8px;
   padding: 0.35rem 0.9rem;
@@ -627,6 +644,7 @@ a {
   font-family: var(--btn);
   font-size: 0.85rem;
   color: var(--ink-soft);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.3rem 0.9rem;
@@ -1071,11 +1089,34 @@ a {
 
 /* Счётчик объёма — тихая строка под окном текста */
 
+/* Счётчик объёма: слов/знаков на подложке, «осталось» — яркой искрой. */
 .text-stats {
-  color: var(--ink-soft);
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   font-size: 0.8rem;
-  margin: 0.2rem 0 0;
-  text-align: right;
+  margin: 0.35rem 0 0;
+}
+
+.stat-chip {
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-family: var(--btn);
+}
+
+.stat-limit {
+  background: transparent;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.stat-limit[data-low="true"] {
+  border-color: var(--rust);
+  color: var(--rust);
 }
 
 /* Адрес своей ИИ у депеши */
@@ -1312,13 +1353,14 @@ a {
   width: 100%;
 }
 
+/* «Новая тетрадь» — главное действие Стола: залитый петроль (одна на экран). */
 .new-notebook > summary {
   display: inline-block;
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--accent);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
   border-radius: 8px;
-  padding: 0.35rem 0.9rem;
+  padding: 0.4rem 1rem;
   font-size: 0.9rem;
   cursor: pointer;
   list-style: none;
@@ -1329,7 +1371,7 @@ a {
 }
 
 .new-notebook > summary:hover {
-  border-color: var(--accent);
+  filter: brightness(1.08);
 }
 
 .new-notebook[open] > summary {
