@@ -443,6 +443,16 @@ export async function createDigest(
   const notebook = notebooks.find((entry) => entry.id === notebookId);
   if (notebook === undefined) return { ok: false, message: "Тетрадь не найдена." };
 
+  // Защита от размножения: пока есть незавершённый черновик сводки — новый
+  // не создаём (иначе в разборах копятся пустые «Сводка · черновик»).
+  const openDigest = passes.some(
+    (pass) =>
+      pass.type === "digest" && pass.notebookId === notebookId && pass.status !== "completed",
+  );
+  if (openDigest) {
+    return { ok: false, message: "Черновик сводки уже есть — завершите его или удалите." };
+  }
+
   const notebookPasses = notebook.passIds
     .map((id) => passes.find((pass) => pass.id === id))
     .filter((pass): pass is Pass => pass !== undefined);
