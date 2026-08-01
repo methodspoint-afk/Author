@@ -82,7 +82,7 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
                   required
                 >
                   <option value="" disabled>
-                    — выберите компас —
+                    — выберите наставника —
                   </option>
                   {compasses.map((compass) => (
                     <option key={compass.id} value={compass.id}>
@@ -93,7 +93,7 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
               </label>
               {selectedCompass !== undefined && (
                 <div className="compass-axes">
-                  <p>Семь осей компаса (родной жанр: {selectedCompass.nativeGenre}):</p>
+                  <p>Семь осей наставника (родной жанр: {selectedCompass.nativeGenre}):</p>
                   <ul>
                     {selectedCompass.axes.map((axis) => (
                       <li key={axis.key}>{axis.label}</li>
@@ -102,7 +102,7 @@ export default function NewPassForm({ notebookId, compasses, allowed, reason }: 
                 </div>
               )}
               <label>
-                Жанр текста (если отличается от родного жанра компаса)
+                Жанр текста (если отличается от родного жанра наставника)
                 <input type="text" name="targetGenre" placeholder="например: иронический детектив" />
               </label>
             </>
