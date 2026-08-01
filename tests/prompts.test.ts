@@ -17,18 +17,27 @@ describe("сборка промптов", () => {
     expect(prompt).toContain("===КОНЕЦ===");
   });
 
-  it("компас-промпт включает знание компаса и перенос жанра", () => {
+  it("компас-промпт включает знание компаса, оси и перенос жанра", () => {
     const prompt = buildCompassPrompt({
       text: "текст",
       compassTitle: "Соркин — намерение и препятствие",
       compassKnowledge: "# ААРОН СОРКИН\n...оси...",
       nativeGenre: "драма и сценарий",
+      axes: [
+        { key: "SORKIN_INTENTION_OBSTACLE", label: "1. Намерение и препятствие" },
+        { key: "SORKIN_LINE_AS_ACTION", label: "2. Реплика — это действие" },
+      ],
       targetGenre: "иронический детектив",
     });
     expect(prompt).toContain("ААРОН СОРКИН");
     expect(prompt).toContain("ПЕРЕНОС ЖАНРА");
     expect(prompt).toContain("иронический детектив");
     expect(prompt).toContain("драма и сценарий");
+    // оси перечислены нумерованным списком и есть осевой контракт
+    expect(prompt).toContain("1. Намерение и препятствие");
+    expect(prompt).toContain("2. Реплика — это действие");
+    expect(prompt).toContain("[ОСЬ 1]");
+    expect(prompt).toContain("[ГЛАВНОЕ]");
   });
 });
 

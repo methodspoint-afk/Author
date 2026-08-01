@@ -1,6 +1,8 @@
 // Сборка промптов (ТЗ §6.3) и контракт формата ответа (§6.2).
 // Этот слой ничего не знает о том, КАК депеша дойдёт до ИИ.
 
+import type { AxisAssessment, AxisState } from "./types";
+
 const EDITOR_ROLE = `Вы — опытный литературный редактор. Железное правило: вы НИКОГДА не пишете
 и не переписываете текст за автора. Никаких готовых формулировок, вариантов фраз
 или «а лучше сказать так». Ваша работа — разбор: показать, что происходит
@@ -25,6 +27,7 @@ export interface CompassPromptInput extends LensPromptInput {
   compassTitle: string;
   compassKnowledge: string; // содержимое md-файла компаса
   nativeGenre: string;
+  axes: Array<{ key: string; label: string }>; // семь осей наставника
   targetGenre?: string; // если автор работает вне родного жанра компаса
 }
 
@@ -59,35 +62,170 @@ ${intentionBlock(intention)}${fragmentBlock(text)}
 ${RESPONSE_CONTRACT}`;
 }
 
+// Контракт осевого разбора «Сверить»: по каждой оси — блок [ОСЬ N] с тремя
+// строками, плюс [ГЛАВНОЕ]. Номер N привязывает ось к реестру наставника
+// (CompassMeta.axes), чтобы парсинг не зависел от совпадения названий.
+export const AXIS_RESPONSE_CONTRACT = `Ответ верните СТРОГО в формате ниже, без текста вне блока. Для КАЖДОЙ из семи
+осей — свой блок [ОСЬ N], где N — номер оси из списка выше. В конце — [ГЛАВНОЕ].
+
+===IRINAOS===
+[ОСЬ 1]
+состояние: <ровно одно из трёх: сильная сторона | зона роста | в норме>
+видно: <что видно ИМЕННО в этом фрагменте — коротко и с примером-цитатой, а не общими словами>
+шаг: <не готовая правка, а вопрос-направление автору: над чем подумать. Если состояние «в норме» — поставьте «—»>
+[ОСЬ 2]
+состояние: …
+видно: …
+шаг: …
+(и так далее по всем семи осям)
+[ОСЬ 7]
+состояние: …
+видно: …
+шаг: …
+[ГЛАВНОЕ]
+<одна главная зона роста фрагмента: куда смотреть в первую очередь — одним абзацем>
+===КОНЕЦ===`;
+
 export function buildCompassPrompt({
   text,
   intention,
   compassTitle,
   compassKnowledge,
   nativeGenre,
+  axes,
   targetGenre,
 }: CompassPromptInput): string {
   const transfer =
     targetGenre !== undefined && targetGenre.trim() !== ""
       ? `\nВНИМАНИЕ — ПЕРЕНОС ЖАНРА: автор работает в жанре «${targetGenre.trim()}»,
 а родной жанр наставника — «${nativeGenre}». Используйте подсказки «ПЕРЕНОС»
-из файла наставника; оси, не имеющие смысла вне родного жанра, честно помечайте.\n`
+из файла наставника; оси, не имеющие смысла вне родного жанра, честно
+помечайте состоянием «в норме» и поясняйте в строке «видно».\n`
       : "";
+
+  const axisList = axes.map((axis, index) => `${index + 1}. ${axis.label}`).join("\n");
 
   return `${EDITOR_ROLE}
 
-Задача — разбор по ориентирам наставника «${compassTitle}». Наставник — это
-ориентир, а НЕ образец для имитации: берём его направление, а не голос. Пройдите
-по семи осям наставника: для каждой оси — короткий диагноз этого фрагмента (что
-подтверждается, что нет), с опорой на формулировки ДИАГНОСТИКИ из файла наставника.
-Если ось к фрагменту не применима — скажите об этом прямо и почему.
+Задача — разбор по осям наставника «${compassTitle}». Наставник — это ориентир,
+а НЕ образец для имитации: берём его направление стиля, а не голос.
+
+Пройдите по всем семи осям наставника. Оси — это грани мастерства, по которым
+мы смотрим на текст:
+${axisList}
+
+По КАЖДОЙ оси дайте короткую, конкретную оценку именно этого фрагмента, опираясь
+на формулировки ДИАГНОСТИКИ из файла наставника. Не общими словами — с примером
+из текста. Честно различайте: где ось уже сильная сторона автора, где зона роста,
+а где всё в норме и трогать нечего.
 ${transfer}
 Файл наставника:
 <<<НАЧАЛО>>>
 ${compassKnowledge}
 <<<КОНЕЦ>>>
 ${intentionBlock(intention)}${fragmentBlock(text)}
-${RESPONSE_CONTRACT}`;
+${AXIS_RESPONSE_CONTRACT}`;
+}
+
+/** Нормализация состояния оси к одному из трёх значений контракта. */
+function normalizeAxisState(raw: string): AxisState {
+  const s = raw.toLowerCase();
+  if (s.includes("сильн")) return "сильная сторона";
+  if (s.includes("рост")) return "зона роста";
+  return "в норме";
+}
+
+/** Достаёт поле («состояние»/«видно»/«шаг») из текста блока одной оси. */
+function axisField(block: string, label: string, nextLabels: string[]): string {
+  const stop = nextLabels.length > 0 ? `(?=\\n\\s*(?:${nextLabels.join("|")}):)` : "";
+  const re = new RegExp(`${label}:\\s*([\\s\\S]*?)${stop === "" ? "$" : stop}`, "iu");
+  const m = re.exec(block);
+  return m?.[1] !== undefined ? m[1].trim() : "";
+}
+
+/**
+ * Парсер осевого разбора: читает блок ===IRINAOS===…===КОНЕЦ===, раскладывает
+ * секции [ОСЬ N] и [ГЛАВНОЕ]. Номер N привязывает оценку к axes[N-1] — берём
+ * оттуда стабильные key/label наставника. Возвращает undefined при сбое.
+ */
+export function parseCompassResponse(
+  raw: string,
+  axes: Array<{ key: string; label: string }>,
+): { axes: AxisAssessment[]; main: string } | undefined {
+  const block = /===IRINAOS===([\s\S]*?)===КОНЕЦ===/u.exec(raw);
+  if (block === null || block[1] === undefined) return undefined;
+
+  const body = block[1];
+  const marker = /\[\s*(ОСЬ\s*(\d+)|ГЛАВНОЕ)\s*\]/gu;
+
+  const sections: Array<{ axisNumber?: number; content: string }> = [];
+  let match = marker.exec(body);
+  if (match === null) return undefined;
+
+  while (match !== null) {
+    const start = match.index + match[0].length;
+    const next = marker.exec(body);
+    const end = next === null ? body.length : next.index;
+    const content = body.slice(start, end).trim();
+    const axisNumber = match[2] !== undefined ? Number.parseInt(match[2], 10) : undefined;
+    sections.push({ ...(axisNumber !== undefined && { axisNumber }), content });
+    match = next;
+  }
+
+  const assessments: AxisAssessment[] = [];
+  let main = "";
+  for (const section of sections) {
+    if (section.axisNumber === undefined) {
+      // [ГЛАВНОЕ]
+      if (main === "") main = section.content;
+      continue;
+    }
+    const axis = axes[section.axisNumber - 1];
+    if (axis === undefined) continue; // номер вне реестра — пропускаем
+
+    const state = normalizeAxisState(axisField(section.content, "состояние", ["видно", "шаг"]));
+    const seen = axisField(section.content, "видно", ["шаг"]);
+    const stepRaw = axisField(section.content, "шаг", []);
+    const step = stepRaw === "—" || stepRaw === "-" ? "" : stepRaw;
+    assessments.push({ key: axis.key, label: axis.label, state, seen, step });
+  }
+
+  if (assessments.length === 0) return undefined;
+  return { axes: assessments, main };
+}
+
+/**
+ * Отбор осей для показа автору: не больше трёх, сначала зоны роста, затем
+ * сильные стороны; «в норме» скрываем (менеджер внимания, не отчёт).
+ */
+export function topAxes(axes: AxisAssessment[], limit = 3): AxisAssessment[] {
+  const rank = (state: AxisState): number =>
+    state === "зона роста" ? 0 : state === "сильная сторона" ? 1 : 2;
+  return axes
+    .filter((axis) => axis.state !== "в норме")
+    .sort((a, b) => rank(a.state) - rank(b.state))
+    .slice(0, limit);
+}
+
+/**
+ * Синтез плоского parsedResult из осевого разбора — чтобы сводка и изыскания
+ * (которые читают parsedResult["разбор"]/["точка роста"]) продолжали работать.
+ */
+export function axisResultToParsed(
+  result: { axes: AxisAssessment[]; main: string },
+): Record<string, string> {
+  const shown = topAxes(result.axes);
+  const razbor = shown
+    .map((axis) => {
+      const step = axis.step !== "" ? ` → ${axis.step}` : "";
+      const name = axis.label.replace(/^\d+\.\s*/u, "");
+      return `${name} (${axis.state}): ${axis.seen}${step}`;
+    })
+    .join("\n");
+  const parsed: Record<string, string> = {};
+  if (razbor !== "") parsed["разбор"] = razbor;
+  if (result.main !== "") parsed["точка роста"] = result.main;
+  return parsed;
 }
 
 /**

@@ -5,7 +5,8 @@ import {
   PASS_STATUS_LABELS_INQUIRY,
   PASS_TYPE_LABELS,
 } from "../lib/passMeta";
-import type { Pass } from "../lib/types";
+import { topAxes } from "../lib/prompts";
+import type { AxisAssessment, Pass } from "../lib/types";
 
 const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
@@ -43,11 +44,25 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
         {pass.intention !== undefined && <p>Намерение: {pass.intention}</p>}
         {pass.inquiryTopic !== undefined && <p>Тема изыскания: {pass.inquiryTopic}</p>}
         {/* Промпт пользователю не показываем — только кнопка «Скопировать» в PassActions. */}
-        {pass.parsedResult !== undefined && (
+        {pass.axisResult !== undefined && pass.axisResult.length > 0 ? (
           <details open={pass.status === "completed"}>
-            <summary>{pass.type === "inquiry" ? "Справка" : "Разбор"}</summary>
-            <ParsedResult result={pass.parsedResult} />
+            <summary>Разбор по осям</summary>
+            <AxisReview
+              axes={pass.axisResult}
+              main={
+                (Array.isArray(pass.parsedResult)
+                  ? pass.parsedResult[0]?.["точка роста"]
+                  : pass.parsedResult?.["точка роста"]) ?? ""
+              }
+            />
           </details>
+        ) : (
+          pass.parsedResult !== undefined && (
+            <details open={pass.status === "completed"}>
+              <summary>{pass.type === "inquiry" ? "Справка" : "Разбор"}</summary>
+              <ParsedResult result={pass.parsedResult} />
+            </details>
+          )
         )}
         {pass.rawResponse !== undefined && (
           <details>
@@ -64,6 +79,32 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
         />
       </div>
     </details>
+  );
+}
+
+// Разбор по осям: не отчёт по всем семи, а 2–3 самые важные (сначала зоны
+// роста). По каждой — состояние (тег), что видно, шаг-вопрос. Сверху — главное.
+function AxisReview({ axes, main }: { axes: AxisAssessment[]; main: string }) {
+  const shown = topAxes(axes);
+  return (
+    <div className="axis-review">
+      {main !== "" && (
+        <div className="axis-main">
+          <span className="axis-main-tag">Главное</span>
+          <p>{main}</p>
+        </div>
+      )}
+      {shown.map((axis) => (
+        <div key={axis.key} className="axis-line" data-state={axis.state}>
+          <p className="axis-head">
+            <span className="axis-tag">{axis.state}</span>
+            {axis.label.replace(/^\d+\.\s*/u, "")}
+          </p>
+          {axis.seen !== "" && <p className="axis-seen">{axis.seen}</p>}
+          {axis.step !== "" && <p className="axis-step">{axis.step}</p>}
+        </div>
+      ))}
+    </div>
   );
 }
 
