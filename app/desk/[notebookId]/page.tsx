@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import FragmentPane from "../../../components/FragmentPane";
 import NewPassForm from "../../../components/NewPassForm";
+import GlossaryTerm from "../../../components/GlossaryTerm";
 import NotebookControls from "../../../components/NotebookControls";
 import PassCard from "../../../components/PassCard";
 import SecretaryNote from "../../../components/SecretaryNote";
@@ -138,7 +139,9 @@ export default async function NotebookPage({
               <p className="pane-hint">Свести все разборы этой тетради в один общий итог.</p>
             </div>
           )}
-          <h2>Разборы</h2>
+          <h2>
+            <GlossaryTerm term="Разборы (в тетради)">Разборы</GlossaryTerm>
+          </h2>
           {passes.length === 0 ? (
             <p className="empty-note">Разборов пока нет — выберите линзу выше.</p>
           ) : (
