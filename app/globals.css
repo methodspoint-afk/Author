@@ -500,6 +500,50 @@ a {
   font-style: italic;
 }
 
+/* «Что уже работает» — тихий разделитель перед сильными сторонами. */
+.axis-subhead {
+  margin: 1.1rem 0 0.2rem;
+  font-family: var(--btn);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+/* Микроупражнение в копилку — необязательная искра в конце разбора. */
+.axis-exercise {
+  margin-top: 1.1rem;
+  background: var(--surface);
+  border: 1px dashed var(--gold);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+}
+
+.axis-exercise-tag {
+  display: inline-block;
+  font-family: var(--btn);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+  padding: 0.15rem 0.55rem;
+  background: var(--amber);
+  color: var(--chocolate);
+  margin-bottom: 0.5rem;
+}
+
+.axis-exercise p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.axis-exercise-note {
+  margin-top: 0.4rem !important;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
 .empty-note {
   color: var(--ink-soft);
 }
