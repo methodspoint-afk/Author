@@ -9,7 +9,14 @@ const NO_JUDGE = chekhov.axes[2]!; // «3. Не судить героев»
 const BREVITY = chekhov.axes[5]!; // «6. Краткость как отбор»
 
 function axis(base: { key: string; label: string }, state: AxisAssessment["state"]): AxisAssessment {
-  return { key: base.key, label: base.label, state, seen: `наблюдение по ${base.label}`, step: "" };
+  return {
+    key: base.key,
+    label: base.label,
+    state,
+    focus: `фокус ${base.key}`,
+    seen: `наблюдение по ${base.label}`,
+    step: "",
+  };
 }
 
 function pass(
@@ -51,6 +58,8 @@ describe("осевая дельта роста", () => {
 
     const detail = g.strengthened.find((a) => a.key === DETAIL.key)!;
     expect(detail.grew).toBe(true);
+    // наружу — нейтральный фокус последней сверки, не имя оси
+    expect(detail.focus).toBe(`фокус ${DETAIL.key}`);
     const noJudge = g.strengthened.find((a) => a.key === NO_JUDGE.key)!;
     expect(noJudge.grew).toBe(false);
     // «выросшие» стоят первыми
