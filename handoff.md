@@ -4,7 +4,22 @@
 
 ## В РАБОТЕ
 
-*(Пусто. Активной незавершённой задачи нет.)*
+- **Задача:** Кнопка «Забрать разбор» — скачать полученный разбор в момент
+  получения, в тех же форматах, что и «Забрать текст» (Word/RTF · PDF · TXT).
+  Сейчас скачивается только чистовик тетради; сам разбор — нельзя.
+- **План:** (1) lib/export.ts — `buildReviewManuscript(pass, notebookTitle)`:
+  осевой разбор (Главное, зоны роста, что уже работает, упражнение — по
+  selectShownAxes) и общий случай (parsedResult справки/сводки); (2) prompts.ts
+  — вынести `selectShownAxes` (общий для PassCard и экспорта); (3) роут
+  app/desk/[notebookId]/review/[passId]/export/route.ts (rtf|txt); (4) печатная
+  страница .../review/[passId]/print (PDF); (5) PassCard — export-bar «Забрать
+  разбор/справку» для завершённых проходов; (6) СЛОВАРЬ + тесты.
+- **Файлы:** lib/export.ts, lib/prompts.ts, components/PassCard.tsx,
+  app/desk/[notebookId]/review/[passId]/{export/route.ts,print/page.tsx},
+  app/globals.css (при необходимости), docs/СЛОВАРЬ.md, tests/export.test.ts.
+- **Критерий готовности:** в завершённом разборе есть «Забрать разбор: Word ·
+  PDF · TXT»; файлы содержат Главное/оси/упражнение; тесты + сборка + живой
+  скрин зелёные.
 
 <!--
   Когда начинается задача разработки, заглушка выше заменяется блоком:
