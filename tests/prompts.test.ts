@@ -11,6 +11,7 @@ describe("сборка промптов", () => {
   it("промпт запрещает писать за автора и содержит контракт формата", () => {
     const prompt = buildDryOutPrompt({ text: "текст", intention: "чтобы финал бил" });
     expect(prompt).toContain("НИКОГДА не пишете");
+    expect(prompt).toContain("присланный фрагмент"); // изоляция контекста
     expect(prompt).toContain("Намерение автора");
     expect(prompt).toContain("чтобы финал бил");
     expect(prompt).toContain("===IRINAOS===");

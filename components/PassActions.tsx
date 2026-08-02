@@ -105,6 +105,14 @@ export default function PassActions({
           </button>
         </p>
       )}
+      {/* Изоляция контекста: у линз-разборов ИИ должна смотреть только на фрагмент,
+          а не подтягивать роман из памяти/других тредов. У изысканий это не нужно. */}
+      {isInquiry !== true && !editingLink && (
+        <p className="pane-hint clean-chat-hint">
+          Совет: вставляйте депешу в новый или временный чат — чтобы ИИ смотрела только на
+          присланный фрагмент, без памяти о других разговорах.
+        </p>
+      )}
       <form action={formAction}>
         <input type="hidden" name="passId" value={passId} />
         <textarea
