@@ -537,6 +537,11 @@ a {
   color: var(--ink);
 }
 
+/* «Например: …» приходит с новой строки — сохраняем перенос. */
+.axis-exercise-text {
+  white-space: pre-line;
+}
+
 .axis-exercise-note {
   margin-top: 0.4rem !important;
   font-size: 0.82rem;

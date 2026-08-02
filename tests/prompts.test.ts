@@ -39,6 +39,11 @@ describe("сборка промптов", () => {
     expect(prompt).not.toContain("1. 1.");
     expect(prompt).toContain("[ОСЬ 1]");
     expect(prompt).toContain("[ГЛАВНОЕ]");
+    // контракт v3: фокус, приоритет, упражнение, развивающая обратная связь
+    expect(prompt).toContain("фокус:");
+    expect(prompt).toContain("приоритет:");
+    expect(prompt).toContain("[УПРАЖНЕНИЕ]");
+    expect(prompt).toContain("развивающей обратной связи");
   });
 });
 
