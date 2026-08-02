@@ -15,15 +15,22 @@
   `parseGrowthResponse`, `GROWTH_RESPONSE_CONTRACT`), типы (AxisMovement,
   GrowthAxis, Pass.growthResult/growthCompassId, PassType "growth"),
   passMeta "growth"→«Разбор роста», tests/growth.test.ts (+6). Инертно.
-- **Шаг 2 (следующий заход):** действие `createGrowthPass` (собрать цепочку →
-  buildGrowthPrompt → Pass type "growth"), парс в submitPassResponse (ветка
-  growth → growthResult), кнопка в тетради у «Пути фрагмента» (видна при
-  eligibleGrowthMentors, выбор наставника если их несколько), показ
-  GrowthReview (стрелки ↑/→/↓ по осям + Главное), revalidate.
-- **Файлы (Шаг 2):** app/desk/actions.ts, components/* (форма + GrowthReview
-  или расширить PassCard), FragmentPane/страница тетради, app/globals.css, tests.
-- **Открыто автору:** переименовать старую «Как растёт голос» (кросс-текст) во
-  избежание коллизии с «Разбор роста» — ждём «ок».
+- **Спека двух процессов — ЗАФИКСИРОВАНА:** docs/ДВА-ПРОЦЕССА.md (источник
+  правды). Единица анализа: текст vs автор. Все 6 вопросов согласованы автором.
+- **Движок «Разбор роста» ПЕРЕСОБРАН под Q1 (нарратив, мульти-наставник):**
+  осевой вариант заменён. lib/growth.ts (`growthChain` собирает версии + советы
+  наставников по пути + «что берегли» из «Не высушить»; `growthEligible` = ≥2
+  сверки любых наставников), lib/prompts.ts (`buildGrowthPrompt` нарративный,
+  `parseGrowthResponse` → `GrowthReport {main, wins[], toWork[], nextStep}`),
+  типы (GrowthReport вместо осевого GrowthAxis). 107 тестов. Инертно.
+- **Шаг 2 (следующий заход) — UI «Разбор роста»:** действие `createGrowthPass`
+  (growthChain → buildGrowthPrompt → Pass type "growth"), парс в
+  submitPassResponse (ветка growth → growthResult), кнопка в тетради у «Пути
+  фрагмента» (видна при growthEligible), показ GrowthReview
+  (Главное · Окрепло · Над чем поработать · Следующий шаг), revalidate.
+- **Шаг 3:** «Голос автора» (Процесс 2): детект «полного цикла» (Не высушить +
+  ≥2 Сверить + Усилить), гейт ≥3 текста; убрать старую «Как растёт голос».
+- **Шаг 4:** онбординг (Q5) + Азбука (термины); **Шаг 5:** напоминалки (Q6).
 
 <!--
   Когда начинается задача разработки, заглушка выше заменяется блоком:

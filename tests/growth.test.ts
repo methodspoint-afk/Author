@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCompass } from "../lib/compasses";
-import { eligibleGrowthMentors, growthChain } from "../lib/growth";
+import { growthChain, growthEligible } from "../lib/growth";
 import { buildGrowthPrompt, parseGrowthResponse } from "../lib/prompts";
 import type { AxisAssessment, FragmentVersion, Notebook, Pass } from "../lib/types";
 
@@ -8,15 +7,9 @@ function version(id: string, text: string): FragmentVersion {
   return { id, notebookId: "nb", text, createdAt: "2026-08-01T00:00:00Z" };
 }
 
-const axis: AxisAssessment = {
-  key: "k",
-  label: "ось",
-  state: "зона роста",
-  seen: "видно",
-  step: "?",
-};
+const axis: AxisAssessment = { key: "k", label: "ось", state: "зона роста", seen: "s", step: "?" };
 
-function check(id: string, versionId: string, compassId = "dovlatov"): Pass {
+function check(id: string, versionId: string, compassId: string, point: string): Pass {
   return {
     id,
     type: "mentor-compass",
@@ -27,96 +20,107 @@ function check(id: string, versionId: string, compassId = "dovlatov"): Pass {
     promptText: "…",
     status: "completed",
     axisResult: [axis],
+    parsedResult: { "точка роста": point },
   };
 }
 
+const versions = [version("v1", "текст один"), version("v2", "текст два"), version("v3", "текст три")];
 const notebook: Notebook = {
   id: "nb",
-  title: "Привычка говорить что думаю",
+  title: "Привычка",
   createdAt: "2026-08-01T00:00:00Z",
   updatedAt: "2026-08-02T00:00:00Z",
   versionIds: ["v1", "v2", "v3"],
   passIds: ["c1", "c2"],
 };
-const versions = [version("v1", "текст один"), version("v2", "текст два"), version("v3", "текст три")];
 
-describe("цепочка разбора роста", () => {
-  it("собирает версии сверок + финальную, ≥2 сверки одного наставника", () => {
-    const passes = [check("c1", "v1"), check("c2", "v2")];
-    const chain = growthChain(notebook, versions, passes, "dovlatov")!;
+describe("цепочка разбора роста (мульти-наставник)", () => {
+  it("собирает версии + советы разных наставников + берёт финальную версию", () => {
+    const passes = [
+      check("c1", "v1", "dovlatov", "сжать сильнее"),
+      check("c2", "v2", "chekhov", "деталь вместо описания"),
+    ];
+    const chain = growthChain(notebook, versions, passes)!;
     expect(chain.checkCount).toBe(2);
     expect(chain.versions.map((v) => v.label)).toEqual(["версия 1", "версия 2", "версия 3"]);
-    expect(chain.versions[2]!.text).toBe("текст три");
+    // советы от РАЗНЫХ наставников
+    expect(chain.advice).toHaveLength(2);
+    expect(chain.advice[0]!.mentor).toContain("Довлатов");
+    expect(chain.advice[1]!.mentor).toContain("Чехов");
+    expect(chain.advice[0]!.point).toBe("сжать сильнее");
   });
 
-  it("меньше двух сверок — нет разбора роста", () => {
-    const passes = [check("c1", "v1")];
-    expect(growthChain({ ...notebook, passIds: ["c1"] }, versions, passes, "dovlatov")).toBeUndefined();
+  it("подтягивает «что берегли» из завершённой «Не высушить»", () => {
+    const dryOut: Pass = {
+      id: "d0",
+      type: "dry-out",
+      label: "Не высушить",
+      notebookId: "nb",
+      promptText: "…",
+      status: "completed",
+      parsedResult: { разбор: "живёт иронией рассказчицы" },
+    };
+    const nb = { ...notebook, passIds: ["d0", "c1", "c2"] };
+    const passes = [dryOut, check("c1", "v1", "dovlatov", "a"), check("c2", "v2", "dovlatov", "b")];
+    expect(growthChain(nb, versions, passes)!.protect).toContain("иронией");
   });
 
-  it("eligibleGrowthMentors — наставники с ≥2 сверками в тетради", () => {
-    const passes = [check("c1", "v1"), check("c2", "v2"), check("c3", "v2", "chekhov")];
-    const nb = { ...notebook, passIds: ["c1", "c2", "c3"] };
-    expect(eligibleGrowthMentors(nb, passes)).toEqual(["dovlatov"]); // у Чехова только 1
+  it("меньше двух сверок — недоступно", () => {
+    const passes = [check("c1", "v1", "dovlatov", "a")];
+    expect(growthEligible({ ...notebook, passIds: ["c1"] }, passes)).toBe(false);
+    expect(growthChain({ ...notebook, passIds: ["c1"] }, versions, passes)).toBeUndefined();
+  });
+
+  it("≥2 сверки любых наставников — доступно", () => {
+    const passes = [check("c1", "v1", "dovlatov", "a"), check("c2", "v2", "sorkin", "b")];
+    expect(growthEligible(notebook, passes)).toBe(true);
   });
 });
 
 describe("депеша разбора роста", () => {
-  it("включает оси, версии по порядку и контракт движения", () => {
-    const compass = getCompass("dovlatov")!;
+  it("нарратив: версии, советы по пути, контракт с бакетами", () => {
     const prompt = buildGrowthPrompt({
-      compassTitle: compass.title,
-      compassKnowledge: "# ДОВЛАТОВ\n...",
-      axes: compass.axes,
       versions: [
         { label: "версия 4", text: "было" },
         { label: "версия 6", text: "стало" },
       ],
+      advice: [{ versionLabel: "версия 4", mentor: "Довлатов — сжатость", point: "сжать" }],
+      protect: "живёт иронией",
+      intention: "вызвать воспоминания",
     });
-    expect(prompt).toContain("разбор РОСТА");
+    expect(prompt).toContain("разбор РОСТА одного текста");
     expect(prompt).toContain("ВЕРСИЯ 4");
-    expect(prompt).toContain("ВЕРСИЯ 6");
-    expect(prompt).toContain("движение:");
-    expect(prompt).toContain("[ОСЬ 1]");
-    expect(prompt).toContain("[ГЛАВНОЕ]");
-    expect(prompt).not.toContain("1. 1."); // без задвоения номера
+    expect(prompt).toContain("Советы наставников по пути");
+    expect(prompt).toContain("Довлатов — сжатость: сжать");
+    expect(prompt).toContain("живёт иронией");
+    expect(prompt).toContain("[ОКРЕПЛО]");
+    expect(prompt).toContain("[НАД ЧЕМ ПОРАБОТАТЬ]");
+    expect(prompt).toContain("[СЛЕДУЮЩИЙ ШАГ]");
   });
 });
 
 describe("парсер разбора роста", () => {
-  const axes = [
-    { key: "A", label: "1. Сжатие" },
-    { key: "B", label: "2. Слух" },
-  ];
-  it("раскладывает движение/фокус/видно/шаг + главное", () => {
+  it("раскладывает Главное/Окрепло/Над чем/Следующий шаг", () => {
     const raw = `===IRINAOS===
-[ОСЬ 1]
-движение: окрепло
-фокус: фраза сжалась
-видно: «говорить не подумав мысли вслух» → «говорить что думаю»
-шаг: где ещё можно срезать объяснение?
-[ОСЬ 2]
-движение: без изменений
-фокус: финал на месте
-видно: финал не двигался между версиями
-шаг: —
 [ГЛАВНОЕ]
-Текст плотнеет; дальше — финал.
+Текст плотнеет от версии к версии.
+[ОКРЕПЛО]
+- Сжатие: «говорить не подумав» → «говорить что думаю»
+- Ирония стала ходом
+[НАД ЧЕМ ПОРАБОТАТЬ]
+- Финал три версии на месте
+[СЛЕДУЮЩИЙ ШАГ]
+Что если финал не спрашивает, а показывает деталью?
 ===КОНЕЦ===`;
-    const parsed = parseGrowthResponse(raw, axes)!;
-    expect(parsed.axes).toHaveLength(2);
-    expect(parsed.axes[0]!.movement).toBe("окрепло");
-    expect(parsed.axes[0]!.focus).toBe("фраза сжалась");
-    expect(parsed.axes[0]!.seen).toContain("говорить что думаю");
-    expect(parsed.axes[0]!.step).toContain("срезать");
-    expect(parsed.axes[1]!.movement).toBe("без изменений");
-    expect(parsed.axes[1]!.step).toBe(""); // «—» → пусто
-    expect(parsed.main).toContain("плотнеет");
+    const r = parseGrowthResponse(raw)!;
+    expect(r.main).toContain("плотнеет");
+    expect(r.wins).toHaveLength(2);
+    expect(r.wins[0]).toContain("говорить что думаю");
+    expect(r.toWork).toEqual(["Финал три версии на месте"]);
+    expect(r.nextStep).toContain("показывает деталью");
   });
 
-  it("«просело» распознаётся, сбой — undefined", () => {
-    const raw = `===IRINAOS===\n[ОСЬ 1]\nдвижение: стало хуже\nвидно: расплылось\nшаг: ?\n[ГЛАВНОЕ]\nитог\n===КОНЕЦ===`;
-    expect(parseGrowthResponse(raw, axes)!.axes[0]!.movement).toBe("просело");
-    expect(parseGrowthResponse("просто текст", axes)).toBeUndefined();
+  it("сбой — undefined", () => {
+    expect(parseGrowthResponse("просто текст")).toBeUndefined();
   });
 });

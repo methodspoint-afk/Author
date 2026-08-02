@@ -58,18 +58,15 @@ export interface AxisAssessment {
 }
 
 /**
- * Оценка движения одной оси в «Разборе роста»: как ось двигалась через версии
- * текста, что изменилось (с примером было→стало) и куда расти дальше.
+ * «Разбор роста» одного текста (мульти-наставник, нарратив): не по осям одного
+ * наставника, а синтез движения через версии — что окрепло, над чем поработать,
+ * и следующий шаг. Единица анализа — один текст (docs/ДВА-ПРОЦЕССА.md).
  */
-export type AxisMovement = "окрепло" | "без изменений" | "просело";
-
-export interface GrowthAxis {
-  key: string; // CompassAxis.key
-  label: string; // имя оси — внутреннее, автору не показываем
-  movement: AxisMovement;
-  focus?: string; // нейтральный заголовок наблюдения (про текст, не термин)
-  seen: string; // что изменилось между версиями, с примером было→стало
-  step: string; // шаг-направление (вопрос); "" если движение не требует шага
+export interface GrowthReport {
+  main: string; // Главное: улучшается ли текст в целом + куда дальше
+  wins: string[]; // Окрепло: что выросло, на какой правке, за счёт чего
+  toWork: string[]; // Над чем поработать: что не двинулось / просело
+  nextStep: string; // Следующий шаг: вопрос-направление
 }
 
 /** Проход — одна сессия диагностики. Всегда живёт в тетради. */
@@ -89,8 +86,7 @@ export interface Pass {
   rawResponse?: string;
   parsedResult?: Record<string, string> | Record<string, string>[];
   axisResult?: AxisAssessment[]; // разбор по осям (только mentor-compass)
-  growthResult?: GrowthAxis[]; // разбор роста по осям (только growth)
-  growthCompassId?: string; // growth: по какому наставнику собрана цепочка
+  growthResult?: GrowthReport; // разбор роста одного текста (только growth)
   completedAt?: string;
   committedPath?: string;
   lastParseFailed?: boolean;
