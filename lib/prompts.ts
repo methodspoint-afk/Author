@@ -247,6 +247,23 @@ export function topAxes(axes: AxisAssessment[], limit?: number): AxisAssessment[
 }
 
 /**
+ * Отбор осей для показа автору: 2–3 зоны роста + одна сильная сторона,
+ * помеченные приоритетом (если наставник их отметил) — иначе по факту.
+ * Один источник и для тетради (PassCard), и для экспорта разбора.
+ */
+export function selectShownAxes(axes: AxisAssessment[]): {
+  growth: AxisAssessment[];
+  strengths: AxisAssessment[];
+} {
+  const pick = (state: AxisState, limit: number): AxisAssessment[] => {
+    const all = axes.filter((axis) => axis.state === state);
+    const pri = all.filter((axis) => axis.priority === true);
+    return (pri.length > 0 ? pri : all).slice(0, limit);
+  };
+  return { growth: pick("зона роста", 3), strengths: pick("сильная сторона", 1) };
+}
+
+/**
  * Синтез плоского parsedResult из осевого разбора — чтобы сводка и изыскания
  * (которые читают parsedResult["разбор"]/["точка роста"]) продолжали работать.
  */

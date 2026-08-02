@@ -907,6 +907,11 @@ a {
   margin: 0 0 1rem;
   line-height: 1.7;
 }
+/* Печать разбора: сохраняем разделы и переносы строк как есть. */
+.review-print-body {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
 @media print {
   .topbar,
   .bottombar,
