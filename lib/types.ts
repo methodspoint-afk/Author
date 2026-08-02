@@ -4,6 +4,7 @@ export type PassType =
   | "dry-out" // Не высушивать: за счёт чего фрагмент живёт
   | "strengthen" // Усилить: слабые места
   | "mentor-compass" // Проход по компасу (13 наставников)
+  | "growth" // Разбор роста: движение одного текста через версии (один наставник, ≥2 сверки)
   | "inquiry" // Изыскания
   | "digest" // Сводка
   | "audit" // Аудит корпуса (LEARNING-LOOP)
@@ -56,6 +57,21 @@ export interface AxisAssessment {
   priority?: boolean; // одна из 2–3 главных зон роста / лучшая сильная сторона под намерение
 }
 
+/**
+ * Оценка движения одной оси в «Разборе роста»: как ось двигалась через версии
+ * текста, что изменилось (с примером было→стало) и куда расти дальше.
+ */
+export type AxisMovement = "окрепло" | "без изменений" | "просело";
+
+export interface GrowthAxis {
+  key: string; // CompassAxis.key
+  label: string; // имя оси — внутреннее, автору не показываем
+  movement: AxisMovement;
+  focus?: string; // нейтральный заголовок наблюдения (про текст, не термин)
+  seen: string; // что изменилось между версиями, с примером было→стало
+  step: string; // шаг-направление (вопрос); "" если движение не требует шага
+}
+
 /** Проход — одна сессия диагностики. Всегда живёт в тетради. */
 export interface Pass {
   id: string;
@@ -73,6 +89,8 @@ export interface Pass {
   rawResponse?: string;
   parsedResult?: Record<string, string> | Record<string, string>[];
   axisResult?: AxisAssessment[]; // разбор по осям (только mentor-compass)
+  growthResult?: GrowthAxis[]; // разбор роста по осям (только growth)
+  growthCompassId?: string; // growth: по какому наставнику собрана цепочка
   completedAt?: string;
   committedPath?: string;
   lastParseFailed?: boolean;

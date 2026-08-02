@@ -10,17 +10,18 @@
   какой правке, за счёт чего (было→стало), где не двинулось + куда расти. В
   отличие от «Как растёт голос» (снимок по всем текстам одного наставника) —
   это траектория ОДНОГО текста через правки автора.
-- **План:** Шаг 1 (движок, этот заход): lib/growth.ts (`growthChain`,
-  `eligibleGrowthMentors`) + lib/prompts.ts (`buildGrowthPrompt`,
-  `parseGrowthResponse`, GROWTH-контракт) + типы (AxisMovement, GrowthAxis,
-  Pass.growthResult, PassType "growth") + tests/growth.test.ts. Шаг 2 (потом):
-  действие createGrowthPass, кнопка в тетради у «Пути фрагмента», показ
-  GrowthReview, passMeta.
-- **Файлы (Шаг 1):** lib/types.ts, lib/growth.ts (новый), lib/prompts.ts,
-  tests/growth.test.ts.
-- **Критерий готовности Шаг 1:** цепочка версий собирается из notebook/versions/
-  passes; депеша роста собирается; ответ парсится в growthResult; тесты зелёные.
-  Движок инертен (без UI) — поведение приложения не меняется, безопасно в main.
+- **Шаг 1 (движок) — ГОТОВО, в main:** lib/growth.ts (`growthChain`,
+  `eligibleGrowthMentors`), lib/prompts.ts (`buildGrowthPrompt`,
+  `parseGrowthResponse`, `GROWTH_RESPONSE_CONTRACT`), типы (AxisMovement,
+  GrowthAxis, Pass.growthResult/growthCompassId, PassType "growth"),
+  passMeta "growth"→«Разбор роста», tests/growth.test.ts (+6). Инертно.
+- **Шаг 2 (следующий заход):** действие `createGrowthPass` (собрать цепочку →
+  buildGrowthPrompt → Pass type "growth"), парс в submitPassResponse (ветка
+  growth → growthResult), кнопка в тетради у «Пути фрагмента» (видна при
+  eligibleGrowthMentors, выбор наставника если их несколько), показ
+  GrowthReview (стрелки ↑/→/↓ по осям + Главное), revalidate.
+- **Файлы (Шаг 2):** app/desk/actions.ts, components/* (форма + GrowthReview
+  или расширить PassCard), FragmentPane/страница тетради, app/globals.css, tests.
 - **Открыто автору:** переименовать старую «Как растёт голос» (кросс-текст) во
   избежание коллизии с «Разбор роста» — ждём «ок».
 
