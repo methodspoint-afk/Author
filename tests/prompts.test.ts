@@ -33,9 +33,10 @@ describe("сборка промптов", () => {
     expect(prompt).toContain("ПЕРЕНОС ЖАНРА");
     expect(prompt).toContain("иронический детектив");
     expect(prompt).toContain("драма и сценарий");
-    // оси перечислены нумерованным списком и есть осевой контракт
+    // оси перечислены нумерованным списком, без задвоения номера
     expect(prompt).toContain("1. Намерение и препятствие");
     expect(prompt).toContain("2. Реплика — это действие");
+    expect(prompt).not.toContain("1. 1.");
     expect(prompt).toContain("[ОСЬ 1]");
     expect(prompt).toContain("[ГЛАВНОЕ]");
   });
