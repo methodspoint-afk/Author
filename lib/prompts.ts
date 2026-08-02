@@ -1,7 +1,7 @@
 // Сборка промптов (ТЗ §6.3) и контракт формата ответа (§6.2).
 // Этот слой ничего не знает о том, КАК депеша дойдёт до ИИ.
 
-import type { AxisAssessment, AxisMovement, AxisState, GrowthAxis } from "./types";
+import type { AxisAssessment, AxisState, GrowthReport } from "./types";
 
 const EDITOR_ROLE = `Вы — опытный литературный редактор. Железное правило: вы НИКОГДА не пишете
 и не переписываете текст за автора. Никаких готовых формулировок, вариантов фраз
@@ -293,133 +293,98 @@ export function axisResultToParsed(
   return parsed;
 }
 
-// --- «Разбор роста»: движение текста через версии глазами одного наставника ---
+// --- «Разбор роста»: нарративная траектория одного текста (мульти-наставник) ---
+// docs/ДВА-ПРОЦЕССА.md: не оси одного наставника, а синтез движения через версии.
 
 export interface GrowthPromptInput {
-  compassTitle: string;
-  compassKnowledge: string;
-  axes: Array<{ key: string; label: string }>;
+  versions: Array<{ label: string; text: string }>; // по порядку
+  advice: Array<{ versionLabel: string; mentor: string; point: string }>; // советы по пути
+  protect?: string; // что берегли — из «Не высушить»
   intention?: string;
-  versions: Array<{ label: string; text: string }>; // в порядке появления
 }
 
-// Контракт разбора роста: по каждой оси — движение (окрепло/без изменений/просело),
-// фокус, что видно (было→стало), шаг; в конце [ГЛАВНОЕ]. [ОСЬ N] привязывает к axes[N-1].
-export const GROWTH_RESPONSE_CONTRACT = `Ответ верните СТРОГО в формате ниже, без текста вне блока. Для КАЖДОЙ из семи
-осей — свой блок [ОСЬ N], где N — номер оси из списка выше. В конце — [ГЛАВНОЕ].
+export const GROWTH_RESPONSE_CONTRACT = `Ответ верните СТРОГО в формате ниже, без текста вне блока.
 
 ===IRINAOS===
-[ОСЬ 1]
-движение: <ровно одно из трёх: окрепло | без изменений | просело>
-фокус: <короткий нейтральный заголовок про то, что происходило в тексте по этой оси (2–5 слов). НЕ название оси и НЕ термин>
-видно: <что именно изменилось от версии к версии — с примером было→стало из конкретных версий. Если по оси не менялось — скажите прямо>
-шаг: <НЕ готовая правка, а вопрос-направление автору: что попробовать на следующей версии по этой оси. Если двигать нечего — поставьте «—»>
-[ОСЬ 2]
-… (и так по всем семи осям)
-[ОСЬ 7]
-…
 [ГЛАВНОЕ]
 <улучшается ли текст в целом от версии к версии и куда смотреть в первую очередь дальше — одним абзацем, через конкретику ЭТИХ версий, без дежурных формул>
+[ОКРЕПЛО]
+- <что выросло: на какой версии/правке и за счёт чего — с примером было→стало>
+- <ещё пункт, если есть>
+[НАД ЧЕМ ПОРАБОТАТЬ]
+- <что не двинулось или просело за версии — с конкретикой>
+- <ещё пункт, если есть>
+[СЛЕДУЮЩИЙ ШАГ]
+<один вопрос-направление автору: что попробовать на следующей версии (не готовая правка)>
 ===КОНЕЦ===`;
 
-export function buildGrowthPrompt({
-  compassTitle,
-  compassKnowledge,
-  axes,
-  intention,
-  versions,
-}: GrowthPromptInput): string {
-  const axisList = axes
-    .map((axis, index) => `${index + 1}. ${axis.label.replace(/^\d+\.\s*/u, "")}`)
-    .join("\n");
+export function buildGrowthPrompt({ versions, advice, protect, intention }: GrowthPromptInput): string {
   const versionBlocks = versions
     .map((v) => `<<<${v.label.toUpperCase()}>>>\n${v.text}\n<<<КОНЕЦ: ${v.label}>>>`)
     .join("\n\n");
+  const adviceBlock =
+    advice.length > 0
+      ? `\nСоветы наставников по пути (что автору предлагали на каждой сверке):\n${advice
+          .map((a) => `— ${a.versionLabel}, ${a.mentor}: ${a.point}`)
+          .join("\n")}\n`
+      : "";
+  const protectBlock =
+    protect !== undefined && protect.trim() !== ""
+      ? `\nЧто в тексте берегли (диагностика «Не высушить»):\n${protect.trim()}\n`
+      : "";
 
   return `${EDITOR_ROLE}
 
-Задача — разбор РОСТА по осям наставника «${compassTitle}». Перед вами несколько
-версий ОДНОГО фрагмента в порядке появления: автор правил текст сам после сверок
-с этим наставником. Смотрите не на отдельную версию, а на ДВИЖЕНИЕ: как текст
-менялся от версии к версии по каждой оси — что окрепло, что осталось на месте,
-что просело. Опирайтесь на формулировки ДИАГНОСТИКИ из файла наставника; по
-каждой оси — с конкретным примером было→стало из этих версий. Хвалу не выдавайте
-даром: если движение есть — покажите, за счёт какой правки; если нет — скажите честно.
-
-Оси наставника:
-${axisList}
-${intentionBlock(intention)}
-Файл наставника:
-<<<НАЧАЛО>>>
-${compassKnowledge}
-<<<КОНЕЦ>>>
-
+Задача — разбор РОСТА одного текста. Перед вами версии ОДНОГО фрагмента по порядку:
+автор правил его сам после сверок с наставниками (наставники могли быть разными).
+Не разбирайте отдельную версию — покажите ДВИЖЕНИЕ через версии: что окрепло (на
+какой правке и за счёт чего), что не двинулось или просело. Учтите советы
+наставников ниже — применил ли автор совет и сработало ли это. Опирайтесь на
+конкретику: пример было→стало из версий. Хвалу даром не выдавайте.
+${protectBlock}${adviceBlock}${intentionBlock(intention)}
 Версии фрагмента (по порядку):
 ${versionBlocks}
 
 ${GROWTH_RESPONSE_CONTRACT}`;
 }
 
-/** Нормализация «движения» оси к одному из трёх значений. */
-function normalizeMovement(raw: string): AxisMovement {
-  const s = raw.toLowerCase();
-  if (/окреп|сильн|вырос|лучше|поднял|прибав/u.test(s)) return "окрепло";
-  if (/просел|хуже|слаб|потер|ухудш|сдал/u.test(s)) return "просело";
-  return "без изменений";
+/** Разбивает содержимое секции на пункты-строки (маркеры -, •, –, — в начале). */
+function bulletLines(content: string): string[] {
+  return content
+    .split("\n")
+    .map((line) => line.replace(/^\s*[-•–—]\s*/u, "").trim())
+    .filter((line) => line !== "");
 }
 
 /**
- * Парсер разбора роста: блоки [ОСЬ N] с полем «движение», плюс [ГЛАВНОЕ].
- * N привязывает оценку к axes[N-1] (стабильные key/label). undefined при сбое.
+ * Парсер разбора роста: секции [ГЛАВНОЕ]/[ОКРЕПЛО]/[НАД ЧЕМ ПОРАБОТАТЬ]/
+ * [СЛЕДУЮЩИЙ ШАГ] внутри блока ===IRINAOS===…===КОНЕЦ===. undefined при сбое.
  */
-export function parseGrowthResponse(
-  raw: string,
-  axes: Array<{ key: string; label: string }>,
-): { axes: GrowthAxis[]; main: string } | undefined {
+export function parseGrowthResponse(raw: string): GrowthReport | undefined {
   const block = /===IRINAOS===([\s\S]*?)===КОНЕЦ===/u.exec(raw);
   if (block === null || block[1] === undefined) return undefined;
 
   const body = block[1];
-  const marker = /\[\s*(ОСЬ\s*(\d+)|ГЛАВНОЕ)\s*\]/gu;
-  const sections: Array<{ axisNumber?: number; content: string }> = [];
+  const marker = /\[\s*(ГЛАВНОЕ|ОКРЕПЛО|НАД ЧЕМ ПОРАБОТАТЬ|СЛЕДУЮЩИЙ ШАГ)\s*\]/gu;
+  const sections = new Map<string, string>();
   let match = marker.exec(body);
   if (match === null) return undefined;
   while (match !== null) {
+    const name = (match[1] ?? "").trim();
     const start = match.index + match[0].length;
     const next = marker.exec(body);
     const end = next === null ? body.length : next.index;
-    const axisNumber = match[2] !== undefined ? Number.parseInt(match[2], 10) : undefined;
-    sections.push({ ...(axisNumber !== undefined && { axisNumber }), content: body.slice(start, end).trim() });
+    if (!sections.has(name)) sections.set(name, body.slice(start, end).trim());
     match = next;
   }
 
-  const result: GrowthAxis[] = [];
-  let main = "";
-  for (const section of sections) {
-    if (section.axisNumber === undefined) {
-      if (main === "") main = section.content;
-      continue;
-    }
-    const axis = axes[section.axisNumber - 1];
-    if (axis === undefined) continue;
-    const c = section.content;
-    const movement = normalizeMovement(axisField(c, "движение", ["фокус", "видно", "шаг"]));
-    const focus = axisField(c, "фокус", ["видно", "шаг"]);
-    const seen = axisField(c, "видно", ["шаг"]);
-    const stepRaw = axisField(c, "шаг", []);
-    const step = stepRaw === "—" || stepRaw === "-" ? "" : stepRaw;
-    result.push({
-      key: axis.key,
-      label: axis.label,
-      movement,
-      ...(focus !== "" && { focus }),
-      seen,
-      step,
-    });
-  }
+  const main = sections.get("ГЛАВНОЕ") ?? "";
+  const wins = bulletLines(sections.get("ОКРЕПЛО") ?? "");
+  const toWork = bulletLines(sections.get("НАД ЧЕМ ПОРАБОТАТЬ") ?? "");
+  const nextStep = sections.get("СЛЕДУЮЩИЙ ШАГ") ?? "";
 
-  if (result.length === 0) return undefined;
-  return { axes: result, main };
+  if (main === "" && wins.length === 0 && toWork.length === 0) return undefined;
+  return { main, wins, toWork, nextStep };
 }
 
 /**
