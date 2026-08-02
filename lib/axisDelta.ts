@@ -9,7 +9,7 @@ import type { AxisAssessment, Pass } from "./types";
 
 export interface AxisTrend {
   key: string;
-  label: string;
+  focus: string; // нейтральный заголовок последнего наблюдения (имя оси не выдаём); "" если нет
   grew: boolean; // была зоной роста, стала сильной стороной — реальный рост
   seen: string; // последнее наблюдение по оси (живой текст, не ярлык)
 }
@@ -29,7 +29,6 @@ function clip(text: string, max = 180): string {
 
 /** Хронология оценок одной оси: все записи по key в порядке завершения сверок. */
 interface AxisHistory {
-  label: string;
   entries: AxisAssessment[]; // в порядке возрастания даты
 }
 
@@ -57,7 +56,7 @@ export function mentorGrowth(compass: CompassMeta, passes: Pass[]): MentorGrowth
   const history = new Map<string, AxisHistory>();
   for (const pass of relevant) {
     for (const axis of pass.axisResult ?? []) {
-      const h = history.get(axis.key) ?? { label: axis.label, entries: [] };
+      const h = history.get(axis.key) ?? { entries: [] };
       h.entries.push(axis);
       history.set(axis.key, h);
     }
@@ -71,7 +70,7 @@ export function mentorGrowth(compass: CompassMeta, passes: Pass[]): MentorGrowth
     const everGrowthZone = h.entries.some((entry) => entry.state === "зона роста");
     const trend: AxisTrend = {
       key,
-      label: h.label,
+      focus: latest.focus ?? "",
       grew: latest.state === "сильная сторона" && everGrowthZone,
       seen: clip(latest.seen),
     };

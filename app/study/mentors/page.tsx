@@ -15,11 +15,6 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
 // Полнота заполнения компаса: семь делений — по числу завершённых проходов.
 const FILL_SLOTS = 7;
 
-// Имя оси без ведущего номера («1. Деталь…» → «Деталь…»).
-function axisName(label: string): string {
-  return label.replace(/^\d+\.\s*/u, "");
-}
-
 // Русское склонение по числу: 1 сверка · 2 сверки · 5 сверок.
 function plural(n: number, one: string, few: string, many: string): string {
   const mod100 = n % 100;
@@ -108,9 +103,9 @@ export default async function MentorsPage() {
                   <ul>
                     {strengthened.map((axis) => (
                       <li key={axis.key}>
-                        <strong>{axisName(axis.label)}</strong>
+                        {axis.focus !== "" && <strong>{axis.focus}</strong>}
                         {axis.grew && <span className="delta-grew"> — выросло из зоны роста</span>}
-                        {`. ${axis.seen}`}
+                        {axis.focus !== "" ? `. ${axis.seen}` : axis.seen}
                       </li>
                     ))}
                   </ul>
@@ -122,8 +117,8 @@ export default async function MentorsPage() {
                   <ul>
                     {toWork.map((axis) => (
                       <li key={axis.key}>
-                        <strong>{axisName(axis.label)}</strong>
-                        {`. ${axis.seen}`}
+                        {axis.focus !== "" && <strong>{axis.focus}</strong>}
+                        {axis.focus !== "" ? `. ${axis.seen}` : axis.seen}
                       </li>
                     ))}
                   </ul>
