@@ -5,6 +5,7 @@ import {
   PASS_STATUS_LABELS_INQUIRY,
   PASS_TYPE_LABELS,
 } from "../lib/passMeta";
+import { selectShownAxes } from "../lib/prompts";
 import type { AxisAssessment, Pass } from "../lib/types";
 
 const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
@@ -66,6 +67,29 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
             <pre>{pass.rawResponse}</pre>
           </details>
         )}
+        {pass.status === "completed" &&
+          (pass.axisResult !== undefined || pass.parsedResult !== undefined) && (
+            <div className="export-bar">
+              <span className="export-label">
+                Забрать {isInquiry ? "справку" : "разбор"}:
+              </span>
+              <a
+                className="export-link"
+                href={`/desk/${pass.notebookId}/review/${pass.id}/export?format=rtf`}
+              >
+                Word
+              </a>
+              <a className="export-link" href={`/desk/${pass.notebookId}/review/${pass.id}/print`}>
+                PDF
+              </a>
+              <a
+                className="export-link"
+                href={`/desk/${pass.notebookId}/review/${pass.id}/export?format=txt`}
+              >
+                TXT
+              </a>
+            </div>
+          )}
         <PassActions
           passId={pass.id}
           status={pass.status}
@@ -101,14 +125,6 @@ function AxisRow({ axis }: { axis: AxisAssessment }) {
   );
 }
 
-// Отбор для показа: приоритетные, если наставник их пометил; иначе — по факту.
-// Зоны роста — до 3, сильная сторона — 1 (та, что ближе к намерению).
-function pickShown(axes: AxisAssessment[], state: AxisAssessment["state"], limit: number) {
-  const all = axes.filter((axis) => axis.state === state);
-  const pri = all.filter((axis) => axis.priority === true);
-  return (pri.length > 0 ? pri : all).slice(0, limit);
-}
-
 // Разбор по осям: сверху «Главное», затем 2–3 зоны роста (конвертируют намерение),
 // затем одна сильная сторона под «Что уже работает». Оси «в норме» скрыты. Каждая
 // ось заканчивается шагом-вопросом. Внизу — упражнение в копилку.
@@ -121,8 +137,7 @@ function AxisReview({
   main: string;
   exercise: string;
 }) {
-  const growth = pickShown(axes, "зона роста", 3);
-  const strengths = pickShown(axes, "сильная сторона", 1);
+  const { growth, strengths } = selectShownAxes(axes);
   return (
     <div className="axis-review">
       {main !== "" && (
