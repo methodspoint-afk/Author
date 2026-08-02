@@ -5,7 +5,6 @@ import {
   PASS_STATUS_LABELS_INQUIRY,
   PASS_TYPE_LABELS,
 } from "../lib/passMeta";
-import { topAxes } from "../lib/prompts";
 import type { AxisAssessment, Pass } from "../lib/types";
 
 const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
@@ -49,11 +48,8 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
             <summary>Разбор по осям</summary>
             <AxisReview
               axes={pass.axisResult}
-              main={
-                (Array.isArray(pass.parsedResult)
-                  ? pass.parsedResult[0]?.["точка роста"]
-                  : pass.parsedResult?.["точка роста"]) ?? ""
-              }
+              main={pickField(pass.parsedResult, "точка роста")}
+              exercise={pickField(pass.parsedResult, "упражнение")}
             />
           </details>
         ) : (
@@ -82,10 +78,43 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
   );
 }
 
-// Разбор по осям: не отчёт по всем семи, а 2–3 самые важные (сначала зоны
-// роста). По каждой — состояние (тег), что видно, шаг-вопрос. Сверху — главное.
-function AxisReview({ axes, main }: { axes: AxisAssessment[]; main: string }) {
-  const shown = topAxes(axes);
+// Достаёт поле из parsedResult (объект или массив блоков).
+function pickField(
+  result: Record<string, string> | Record<string, string>[] | undefined,
+  key: string,
+): string {
+  const block = Array.isArray(result) ? result[0] : result;
+  return block?.[key] ?? "";
+}
+
+function AxisRow({ axis }: { axis: AxisAssessment }) {
+  return (
+    <div className="axis-line" data-state={axis.state}>
+      <p className="axis-head">
+        <span className="axis-tag">{axis.state}</span>
+        {axis.label.replace(/^\d+\.\s*/u, "")}
+      </p>
+      {axis.seen !== "" && <p className="axis-seen">{axis.seen}</p>}
+      {axis.step !== "" && <p className="axis-step">{axis.step}</p>}
+    </div>
+  );
+}
+
+// Разбор по осям: сверху «Главное», затем все зоны роста, затем сильные стороны
+// под «Что уже работает» (оси «в норме» скрыты — показываем столько, сколько
+// есть по факту). Каждая ось заканчивается шагом-вопросом. Внизу — упражнение
+// в копилку. По решению автора: рост — все; сильное — в фокусе намерения.
+function AxisReview({
+  axes,
+  main,
+  exercise,
+}: {
+  axes: AxisAssessment[];
+  main: string;
+  exercise: string;
+}) {
+  const growth = axes.filter((axis) => axis.state === "зона роста");
+  const strengths = axes.filter((axis) => axis.state === "сильная сторона");
   return (
     <div className="axis-review">
       {main !== "" && (
@@ -94,16 +123,24 @@ function AxisReview({ axes, main }: { axes: AxisAssessment[]; main: string }) {
           <p>{main}</p>
         </div>
       )}
-      {shown.map((axis) => (
-        <div key={axis.key} className="axis-line" data-state={axis.state}>
-          <p className="axis-head">
-            <span className="axis-tag">{axis.state}</span>
-            {axis.label.replace(/^\d+\.\s*/u, "")}
-          </p>
-          {axis.seen !== "" && <p className="axis-seen">{axis.seen}</p>}
-          {axis.step !== "" && <p className="axis-step">{axis.step}</p>}
-        </div>
+      {growth.map((axis) => (
+        <AxisRow key={axis.key} axis={axis} />
       ))}
+      {strengths.length > 0 && (
+        <>
+          <p className="axis-subhead">Что уже работает</p>
+          {strengths.map((axis) => (
+            <AxisRow key={axis.key} axis={axis} />
+          ))}
+        </>
+      )}
+      {exercise !== "" && (
+        <div className="axis-exercise">
+          <span className="axis-exercise-tag">Упражнение</span>
+          <p>{exercise}</p>
+          <p className="axis-exercise-note">В копилку — по желанию, вне этого текста.</p>
+        </div>
+      )}
     </div>
   );
 }

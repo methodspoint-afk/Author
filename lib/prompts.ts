@@ -63,16 +63,18 @@ ${RESPONSE_CONTRACT}`;
 }
 
 // Контракт осевого разбора «Сверить»: по каждой оси — блок [ОСЬ N] с тремя
-// строками, плюс [ГЛАВНОЕ]. Номер N привязывает ось к реестру наставника
-// (CompassMeta.axes), чтобы парсинг не зависел от совпадения названий.
+// строками, плюс [ГЛАВНОЕ] и [УПРАЖНЕНИЕ]. Номер N привязывает ось к реестру
+// наставника (CompassMeta.axes), чтобы парсинг не зависел от совпадения названий.
+// «шаг» — продвигающий вопрос (и для зоны роста, и для сильной стороны).
 export const AXIS_RESPONSE_CONTRACT = `Ответ верните СТРОГО в формате ниже, без текста вне блока. Для КАЖДОЙ из семи
-осей — свой блок [ОСЬ N], где N — номер оси из списка выше. В конце — [ГЛАВНОЕ].
+осей — свой блок [ОСЬ N], где N — номер оси из списка выше. В конце — [ГЛАВНОЕ]
+и [УПРАЖНЕНИЕ].
 
 ===IRINAOS===
 [ОСЬ 1]
 состояние: <ровно одно из трёх: сильная сторона | зона роста | в норме>
 видно: <что видно ИМЕННО в этом фрагменте — коротко и с примером-цитатой, а не общими словами>
-шаг: <не готовая правка, а вопрос-направление автору: над чем подумать. Если состояние «в норме» — поставьте «—»>
+шаг: <НЕ готовая правка, а продвигающий вопрос из роли этого наставника — такой, что помогает автору осмыслить эту ось и САМОМУ решить, что здесь дорабатывать, а что оставить. Вопрос обязателен и для «зоны роста», и для «сильной стороны». Только если «в норме» — поставьте «—»>
 [ОСЬ 2]
 состояние: …
 видно: …
@@ -83,7 +85,9 @@ export const AXIS_RESPONSE_CONTRACT = `Ответ верните СТРОГО в
 видно: …
 шаг: …
 [ГЛАВНОЕ]
-<одна главная зона роста фрагмента: куда смотреть в первую очередь — одним абзацем>
+<одна главная зона роста фрагмента: куда смотреть в первую очередь — одним абзацем, относительно намерения автора>
+[УПРАЖНЕНИЕ]
+<одно короткое микроупражнение на конкретный писательский микронавык из роли ИМЕННО этого наставника. Это не правка данного фрагмента, а тренировка навыка, которую автор возьмёт в копилку и сделает по желанию, вне этого текста. 1–3 предложения.>
 ===КОНЕЦ===`;
 
 export function buildCompassPrompt({
@@ -121,7 +125,10 @@ ${axisList}
 По КАЖДОЙ оси дайте короткую, конкретную оценку именно этого фрагмента, опираясь
 на формулировки ДИАГНОСТИКИ из файла наставника. Не общими словами — с примером
 из текста. Честно различайте: где ось уже сильная сторона автора, где зона роста,
-а где всё в норме и трогать нечего.
+а где всё в норме и трогать нечего. По каждой видимой оси (и зоне роста, и
+сильной стороне) завершайте разбор продвигающим вопросом из вашей роли —
+таким, чтобы автор сам решил, что дорабатывать. В конце дайте одно микроупражнение
+на микронавык из вашей роли — автор возьмёт его в копилку.
 ${transfer}
 Файл наставника:
 <<<НАЧАЛО>>>
@@ -147,22 +154,29 @@ function axisField(block: string, label: string, nextLabels: string[]): string {
   return m?.[1] !== undefined ? m[1].trim() : "";
 }
 
+export interface CompassReview {
+  axes: AxisAssessment[];
+  main: string; // [ГЛАВНОЕ] — куда смотреть в первую очередь
+  exercise: string; // [УПРАЖНЕНИЕ] — микроупражнение в копилку ("" если нет)
+}
+
 /**
  * Парсер осевого разбора: читает блок ===IRINAOS===…===КОНЕЦ===, раскладывает
- * секции [ОСЬ N] и [ГЛАВНОЕ]. Номер N привязывает оценку к axes[N-1] — берём
- * оттуда стабильные key/label наставника. Возвращает undefined при сбое.
+ * секции [ОСЬ N], [ГЛАВНОЕ] и [УПРАЖНЕНИЕ]. Номер N привязывает оценку к
+ * axes[N-1] — берём оттуда стабильные key/label наставника. undefined при сбое.
  */
 export function parseCompassResponse(
   raw: string,
   axes: Array<{ key: string; label: string }>,
-): { axes: AxisAssessment[]; main: string } | undefined {
+): CompassReview | undefined {
   const block = /===IRINAOS===([\s\S]*?)===КОНЕЦ===/u.exec(raw);
   if (block === null || block[1] === undefined) return undefined;
 
   const body = block[1];
-  const marker = /\[\s*(ОСЬ\s*(\d+)|ГЛАВНОЕ)\s*\]/gu;
+  const marker = /\[\s*(ОСЬ\s*(\d+)|ГЛАВНОЕ|УПРАЖНЕНИЕ)\s*\]/gu;
 
-  const sections: Array<{ axisNumber?: number; content: string }> = [];
+  type Kind = "axis" | "main" | "exercise";
+  const sections: Array<{ kind: Kind; axisNumber?: number; content: string }> = [];
   let match = marker.exec(body);
   if (match === null) return undefined;
 
@@ -171,20 +185,26 @@ export function parseCompassResponse(
     const next = marker.exec(body);
     const end = next === null ? body.length : next.index;
     const content = body.slice(start, end).trim();
+    const label = match[1] ?? "";
     const axisNumber = match[2] !== undefined ? Number.parseInt(match[2], 10) : undefined;
-    sections.push({ ...(axisNumber !== undefined && { axisNumber }), content });
+    const kind: Kind = axisNumber !== undefined ? "axis" : label.startsWith("УПРАЖНЕНИЕ") ? "exercise" : "main";
+    sections.push({ kind, ...(axisNumber !== undefined && { axisNumber }), content });
     match = next;
   }
 
   const assessments: AxisAssessment[] = [];
   let main = "";
+  let exercise = "";
   for (const section of sections) {
-    if (section.axisNumber === undefined) {
-      // [ГЛАВНОЕ]
+    if (section.kind === "main") {
       if (main === "") main = section.content;
       continue;
     }
-    const axis = axes[section.axisNumber - 1];
+    if (section.kind === "exercise") {
+      if (exercise === "") exercise = section.content;
+      continue;
+    }
+    const axis = axes[(section.axisNumber ?? 0) - 1];
     if (axis === undefined) continue; // номер вне реестра — пропускаем
 
     const state = normalizeAxisState(axisField(section.content, "состояние", ["видно", "шаг"]));
@@ -195,20 +215,21 @@ export function parseCompassResponse(
   }
 
   if (assessments.length === 0) return undefined;
-  return { axes: assessments, main };
+  return { axes: assessments, main, exercise };
 }
 
 /**
- * Отбор осей для показа автору: не больше трёх, сначала зоны роста, затем
- * сильные стороны; «в норме» скрываем (менеджер внимания, не отчёт).
+ * Оси для показа автору, в порядке чтения: сначала зоны роста, затем сильные
+ * стороны; «в норме» скрываем (менеджер внимания, не отчёт). По умолчанию
+ * показываем СТОЛЬКО, сколько есть по факту (лимит — только если задан).
  */
-export function topAxes(axes: AxisAssessment[], limit = 3): AxisAssessment[] {
+export function topAxes(axes: AxisAssessment[], limit?: number): AxisAssessment[] {
   const rank = (state: AxisState): number =>
     state === "зона роста" ? 0 : state === "сильная сторона" ? 1 : 2;
-  return axes
+  const shown = axes
     .filter((axis) => axis.state !== "в норме")
-    .sort((a, b) => rank(a.state) - rank(b.state))
-    .slice(0, limit);
+    .sort((a, b) => rank(a.state) - rank(b.state));
+  return limit === undefined ? shown : shown.slice(0, limit);
 }
 
 /**
@@ -216,7 +237,7 @@ export function topAxes(axes: AxisAssessment[], limit = 3): AxisAssessment[] {
  * (которые читают parsedResult["разбор"]/["точка роста"]) продолжали работать.
  */
 export function axisResultToParsed(
-  result: { axes: AxisAssessment[]; main: string },
+  result: { axes: AxisAssessment[]; main: string; exercise?: string },
 ): Record<string, string> {
   const shown = topAxes(result.axes);
   const razbor = shown
@@ -229,6 +250,7 @@ export function axisResultToParsed(
   const parsed: Record<string, string> = {};
   if (razbor !== "") parsed["разбор"] = razbor;
   if (result.main !== "") parsed["точка роста"] = result.main;
+  if (result.exercise !== undefined && result.exercise !== "") parsed["упражнение"] = result.exercise;
   return parsed;
 }
 
