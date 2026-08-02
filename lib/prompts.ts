@@ -103,7 +103,11 @@ export function buildCompassPrompt({
 помечайте состоянием «в норме» и поясняйте в строке «видно».\n`
       : "";
 
-  const axisList = axes.map((axis, index) => `${index + 1}. ${axis.label}`).join("\n");
+  // Метки осей уже могут содержать ведущий номер («1. Намерение…») — снимаем
+  // его, чтобы не задваивать нумерацию списка.
+  const axisList = axes
+    .map((axis, index) => `${index + 1}. ${axis.label.replace(/^\d+\.\s*/u, "")}`)
+    .join("\n");
 
   return `${EDITOR_ROLE}
 
