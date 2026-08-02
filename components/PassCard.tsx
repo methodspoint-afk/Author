@@ -92,7 +92,8 @@ function AxisRow({ axis }: { axis: AxisAssessment }) {
     <div className="axis-line" data-state={axis.state}>
       <p className="axis-head">
         <span className="axis-tag">{axis.state}</span>
-        {axis.label.replace(/^\d+\.\s*/u, "")}
+        {/* имя оси автору не показываем — только нейтральный «фокус» */}
+        {axis.focus !== undefined && axis.focus !== "" && <span>{axis.focus}</span>}
       </p>
       {axis.seen !== "" && <p className="axis-seen">{axis.seen}</p>}
       {axis.step !== "" && <p className="axis-step">{axis.step}</p>}
@@ -100,10 +101,17 @@ function AxisRow({ axis }: { axis: AxisAssessment }) {
   );
 }
 
-// Разбор по осям: сверху «Главное», затем все зоны роста, затем сильные стороны
-// под «Что уже работает» (оси «в норме» скрыты — показываем столько, сколько
-// есть по факту). Каждая ось заканчивается шагом-вопросом. Внизу — упражнение
-// в копилку. По решению автора: рост — все; сильное — в фокусе намерения.
+// Отбор для показа: приоритетные, если наставник их пометил; иначе — по факту.
+// Зоны роста — до 3, сильная сторона — 1 (та, что ближе к намерению).
+function pickShown(axes: AxisAssessment[], state: AxisAssessment["state"], limit: number) {
+  const all = axes.filter((axis) => axis.state === state);
+  const pri = all.filter((axis) => axis.priority === true);
+  return (pri.length > 0 ? pri : all).slice(0, limit);
+}
+
+// Разбор по осям: сверху «Главное», затем 2–3 зоны роста (конвертируют намерение),
+// затем одна сильная сторона под «Что уже работает». Оси «в норме» скрыты. Каждая
+// ось заканчивается шагом-вопросом. Внизу — упражнение в копилку.
 function AxisReview({
   axes,
   main,
@@ -113,8 +121,8 @@ function AxisReview({
   main: string;
   exercise: string;
 }) {
-  const growth = axes.filter((axis) => axis.state === "зона роста");
-  const strengths = axes.filter((axis) => axis.state === "сильная сторона");
+  const growth = pickShown(axes, "зона роста", 3);
+  const strengths = pickShown(axes, "сильная сторона", 1);
   return (
     <div className="axis-review">
       {main !== "" && (
@@ -137,7 +145,7 @@ function AxisReview({
       {exercise !== "" && (
         <div className="axis-exercise">
           <span className="axis-exercise-tag">Упражнение</span>
-          <p>{exercise}</p>
+          <p className="axis-exercise-text">{exercise}</p>
           <p className="axis-exercise-note">В копилку — по желанию, вне этого текста.</p>
         </div>
       )}
