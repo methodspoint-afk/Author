@@ -22,11 +22,6 @@ export interface MentorGrowth {
   toWork: AxisTrend[]; // над чем поработать
 }
 
-function clip(text: string, max = 180): string {
-  const t = text.trim();
-  return t.length > max ? `${t.slice(0, max - 1).trimEnd()}…` : t;
-}
-
 /** Хронология оценок одной оси: все записи по key в порядке завершения сверок. */
 interface AxisHistory {
   entries: AxisAssessment[]; // в порядке возрастания даты
@@ -72,7 +67,7 @@ export function mentorGrowth(compass: CompassMeta, passes: Pass[]): MentorGrowth
       key,
       focus: latest.focus ?? "",
       grew: latest.state === "сильная сторона" && everGrowthZone,
-      seen: clip(latest.seen),
+      seen: latest.seen.trim(), // показываем наблюдение целиком (не обрезаем)
     };
     if (latest.state === "сильная сторона") strengthened.push(trend);
     else toWork.push(trend);
