@@ -6,7 +6,7 @@ import {
   PASS_TYPE_LABELS,
 } from "../lib/passMeta";
 import { selectShownAxes } from "../lib/prompts";
-import type { AxisAssessment, Pass } from "../lib/types";
+import type { AxisAssessment, GrowthReport, Pass } from "../lib/types";
 
 const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
@@ -44,7 +44,12 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
         {pass.intention !== undefined && <p>Намерение: {pass.intention}</p>}
         {pass.inquiryTopic !== undefined && <p>Тема изыскания: {pass.inquiryTopic}</p>}
         {/* Промпт пользователю не показываем — только кнопка «Скопировать» в PassActions. */}
-        {pass.axisResult !== undefined && pass.axisResult.length > 0 ? (
+        {pass.growthResult !== undefined ? (
+          <details open={pass.status === "completed"}>
+            <summary>Разбор роста</summary>
+            <GrowthReview report={pass.growthResult} />
+          </details>
+        ) : pass.axisResult !== undefined && pass.axisResult.length > 0 ? (
           <details open={pass.status === "completed"}>
             <summary>Разбор по осям</summary>
             <AxisReview
@@ -162,6 +167,47 @@ function AxisReview({
           <span className="axis-exercise-tag">Упражнение</span>
           <p className="axis-exercise-text">{exercise}</p>
           <p className="axis-exercise-note">В копилку — по желанию, вне этого текста.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Разбор роста: движение текста через версии. Главное сверху, затем «Окрепло»
+// (петроль) и «Над чем поработать» (ржавый), внизу — «Следующий шаг»-вопрос.
+function GrowthReview({ report }: { report: GrowthReport }) {
+  return (
+    <div className="axis-review">
+      {report.main !== "" && (
+        <div className="axis-main">
+          <span className="axis-main-tag">Главное</span>
+          <p>{report.main}</p>
+        </div>
+      )}
+      {report.wins.length > 0 && (
+        <div className="delta-line delta-win">
+          <span className="delta-tag">Окрепло</span>
+          <ul>
+            {report.wins.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {report.toWork.length > 0 && (
+        <div className="delta-line delta-work">
+          <span className="delta-tag">Над чем поработать</span>
+          <ul>
+            {report.toWork.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {report.nextStep !== "" && (
+        <div className="growth-next">
+          <span className="growth-next-tag">Следующий шаг</span>
+          <p>{report.nextStep}</p>
         </div>
       )}
     </div>

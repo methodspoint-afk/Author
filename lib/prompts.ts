@@ -387,6 +387,18 @@ export function parseGrowthResponse(raw: string): GrowthReport | undefined {
   return { main, wins, toWork, nextStep };
 }
 
+/** Плоский parsedResult из разбора роста — чтобы сводка/экспорт продолжали работать. */
+export function growthReportToParsed(report: GrowthReport): Record<string, string> {
+  const parts: string[] = [];
+  if (report.main !== "") parts.push(report.main);
+  if (report.wins.length > 0) parts.push(`Окрепло: ${report.wins.join("; ")}`);
+  if (report.toWork.length > 0) parts.push(`Над чем поработать: ${report.toWork.join("; ")}`);
+  const parsed: Record<string, string> = {};
+  if (parts.length > 0) parsed["разбор"] = parts.join("\n");
+  if (report.nextStep !== "") parsed["точка роста"] = report.nextStep;
+  return parsed;
+}
+
 /**
  * Парсер по контракту формата: читает только блок ===IRINAOS===…===КОНЕЦ===,
  * секции — по маркерам [СЕКЦИЯ: имя]. Возвращает undefined при сбое —
