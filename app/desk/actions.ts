@@ -13,17 +13,20 @@ import { buildNewNotebook, cleanTitle, removeNotebook, removePass } from "../../
 import { lastVoiceCheckDate, laterDate, readLastAuditDate } from "../../lib/rituals";
 import {
   axisResultToParsed,
+  buildAuthorVoicePrompt,
   buildCompassPrompt,
   buildDryOutPrompt,
   buildGrowthPrompt,
   buildStrengthenPrompt,
   growthReportToParsed,
+  parseAuthorVoiceResponse,
   parseCompassResponse,
   parseGrowthResponse,
   parsePromptResponse,
 } from "../../lib/prompts";
 import { readCollection, writeCollection } from "../../lib/storage";
 import type { FragmentVersion, Notebook, Pass } from "../../lib/types";
+import { authorVoiceInput } from "../../lib/voice";
 
 export interface ActionResult {
   error?: string;
@@ -290,6 +293,7 @@ export async function submitPassResponse(
   let parsed: Record<string, string> | undefined;
   let axisResult: Pass["axisResult"];
   let growthResult: Pass["growthResult"];
+  let voiceResult: Pass["voiceResult"];
   if (pass.type === "mentor-compass" && pass.compassId !== undefined) {
     const compass = getCompass(pass.compassId);
     const axisParsed =
@@ -302,6 +306,12 @@ export async function submitPassResponse(
     const report = parseGrowthResponse(raw);
     if (report !== undefined) {
       growthResult = report;
+      parsed = growthReportToParsed(report);
+    }
+  } else if (pass.type === "author-voice") {
+    const report = parseAuthorVoiceResponse(raw);
+    if (report !== undefined) {
+      voiceResult = report;
       parsed = growthReportToParsed(report);
     }
   } else {
@@ -321,6 +331,7 @@ export async function submitPassResponse(
   pass.parsedResult = parsed;
   if (axisResult !== undefined) pass.axisResult = axisResult;
   if (growthResult !== undefined) pass.growthResult = growthResult;
+  if (voiceResult !== undefined) pass.voiceResult = voiceResult;
   pass.status = "completed";
   pass.completedAt = new Date().toISOString();
   pass.lastParseFailed = false;
@@ -329,7 +340,7 @@ export async function submitPassResponse(
   // результат живёт на проходе. Завершённая сверка сама гасит напоминание на
   // Столе (дата берётся с прохода, см. lastVoiceCheckDate). Полный «Аудит
   // корпуса» с файлами-архивами и авто-ядром — под следующую версию.
-  if (pass.type === "audit") {
+  if (pass.type === "audit" || pass.type === "author-voice") {
     revalidatePath("/study/voice");
     revalidatePath("/study");
   }
@@ -370,6 +381,47 @@ export async function startVoiceCheck(): Promise<void> {
     label: title,
     notebookId: notebook.id,
     promptText: buildVoiceCheckPrompt(pairs),
+    status: "draft",
+  };
+  notebook.passIds.push(pass.id);
+
+  notebooks.push(notebook);
+  passes.push(pass);
+  await writeCollection("notebooks.json", notebooks);
+  await writeCollection("passes.json", passes);
+  revalidatePath("/study/voice");
+  revalidatePath("/study");
+}
+
+/**
+ * «Голос автора» (Процесс 2, docs/ДВА-ПРОЦЕССА.md): кросс-текстовый разбор
+ * голоса поверх корпуса. Секретарь собирает финальные версии всех текстов,
+ * прошедших полный цикл (Не высушить + ≥2 Сверить + Усилить), и депешу-портрет.
+ * Доступен при ≥3 таких текстах. Живёт кабинетной тетрадью, один черновик за раз.
+ */
+export async function startAuthorVoice(): Promise<void> {
+  const { notebooks, passes, versions } = await loadAll();
+  if (passes.some((pass) => pass.type === "author-voice" && pass.status !== "completed")) return;
+
+  const texts = authorVoiceInput(notebooks, versions, passes);
+  if (texts.length < 3) return;
+
+  const now = new Date().toISOString();
+  const title = `Голос автора — ${now.slice(0, 10)}`;
+  const notebook: Notebook = {
+    id: `voice-${randomUUID().slice(0, 8)}`,
+    title,
+    createdAt: now,
+    updatedAt: now,
+    versionIds: [],
+    passIds: [],
+  };
+  const pass: Pass = {
+    id: randomUUID(),
+    type: "author-voice",
+    label: title,
+    notebookId: notebook.id,
+    promptText: buildAuthorVoicePrompt({ texts }),
     status: "draft",
   };
   notebook.passIds.push(pass.id);

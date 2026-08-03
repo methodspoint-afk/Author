@@ -44,7 +44,12 @@ export default function PassCard({ pass, defaultOpen }: { pass: Pass; defaultOpe
         {pass.intention !== undefined && <p>Намерение: {pass.intention}</p>}
         {pass.inquiryTopic !== undefined && <p>Тема изыскания: {pass.inquiryTopic}</p>}
         {/* Промпт пользователю не показываем — только кнопка «Скопировать» в PassActions. */}
-        {pass.growthResult !== undefined ? (
+        {pass.voiceResult !== undefined ? (
+          <details open={pass.status === "completed"}>
+            <summary>Голос автора</summary>
+            <GrowthReview report={pass.voiceResult} winLabel="Уверенно" workLabel="Колеблется" />
+          </details>
+        ) : pass.growthResult !== undefined ? (
           <details open={pass.status === "completed"}>
             <summary>Разбор роста</summary>
             <GrowthReview report={pass.growthResult} />
@@ -173,9 +178,18 @@ function AxisReview({
   );
 }
 
-// Разбор роста: движение текста через версии. Главное сверху, затем «Окрепло»
-// (петроль) и «Над чем поработать» (ржавый), внизу — «Следующий шаг»-вопрос.
-function GrowthReview({ report }: { report: GrowthReport }) {
+// Разбор роста / Голос автора: один и тот же каркас GrowthReport. Главное сверху,
+// затем «окрепло/уверенно» (петроль) и «над чем поработать/колеблется» (ржавый),
+// внизу — «Следующий шаг»-вопрос. Ярлыки колонок задаёт вызывающий (текст vs голос).
+function GrowthReview({
+  report,
+  winLabel = "Окрепло",
+  workLabel = "Над чем поработать",
+}: {
+  report: GrowthReport;
+  winLabel?: string;
+  workLabel?: string;
+}) {
   return (
     <div className="axis-review">
       {report.main !== "" && (
@@ -186,7 +200,7 @@ function GrowthReview({ report }: { report: GrowthReport }) {
       )}
       {report.wins.length > 0 && (
         <div className="delta-line delta-win">
-          <span className="delta-tag">Окрепло</span>
+          <span className="delta-tag">{winLabel}</span>
           <ul>
             {report.wins.map((item, index) => (
               <li key={index}>{item}</li>
@@ -196,7 +210,7 @@ function GrowthReview({ report }: { report: GrowthReport }) {
       )}
       {report.toWork.length > 0 && (
         <div className="delta-line delta-work">
-          <span className="delta-tag">Над чем поработать</span>
+          <span className="delta-tag">{workLabel}</span>
           <ul>
             {report.toWork.map((item, index) => (
               <li key={index}>{item}</li>

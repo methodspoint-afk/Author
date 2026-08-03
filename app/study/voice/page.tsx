@@ -1,39 +1,27 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import Link from "next/link";
 import PassCard from "../../../components/PassCard";
-import { collectAuditPairs } from "../../../lib/audit";
 import { getAllPasses, getNotebooks } from "../../../lib/data";
-import { lastVoiceCheckDate, laterDate, readLastAuditDate } from "../../../lib/rituals";
-import { readCollection } from "../../../lib/storage";
-import type { FragmentVersion } from "../../../lib/types";
-import { startVoiceCheck } from "../../desk/actions";
+import { AUTHOR_VOICE_MIN_TEXTS, fullyCycledNotebooks } from "../../../lib/voice";
+import { startAuthorVoice } from "../../desk/actions";
 
 export const dynamic = "force-dynamic";
 
-async function readIfExists(filePath: string): Promise<string | undefined> {
-  try {
-    return await fs.readFile(filePath, "utf8");
-  } catch {
-    return undefined;
-  }
-}
-
 export default async function VoicePage() {
-  const [voiceCore, notebooks, passes, versions, auditFileDate] = await Promise.all([
-    readIfExists(path.join(process.cwd(), "learning", "AUTHOR-VOICE-CORE.md")),
-    getNotebooks(),
-    getAllPasses(),
-    readCollection<FragmentVersion>("fragment-versions.json"),
-    readLastAuditDate(),
-  ]);
+  const [notebooks, passes] = await Promise.all([getNotebooks(), getAllPasses()]);
 
-  const lastCheck = laterDate(auditFileDate, lastVoiceCheckDate(passes));
-  const activeCheck = passes.find((pass) => pass.type === "audit" && pass.status !== "completed");
-  const doneChecks = passes
+  const cycled = fullyCycledNotebooks(notebooks, passes).length;
+  const eligible = cycled >= AUTHOR_VOICE_MIN_TEXTS;
+
+  const active = passes.find((pass) => pass.type === "author-voice" && pass.status !== "completed");
+  const done = passes
+    .filter((pass) => pass.type === "author-voice" && pass.status === "completed")
+    .sort((a, b) => (b.completedAt ?? "").localeCompare(a.completedAt ?? ""));
+
+  // Прежние «Сверки голоса» (тип audit) — механику убрали (одна сущность голоса),
+  // но старые сверки автора не прячем: показываем свёрнутой историей.
+  const oldChecks = passes
     .filter((pass) => pass.type === "audit" && pass.status === "completed")
     .sort((a, b) => (b.completedAt ?? "").localeCompare(a.completedAt ?? ""));
-  const pairs = collectAuditPairs(notebooks, versions, lastCheck);
 
   return (
     <>
@@ -43,59 +31,61 @@ export default async function VoicePage() {
       <h1>Голос</h1>
       <p className="empty-note">
         Портрет — качественный, не численный: словами и примерами, не графиками. Замеры по
-        осям каждого наставника — в <Link href="/study/mentors">Наставниках</Link>.
+        осям каждого наставника — в <Link href="/study/mentors">Наставниках</Link>; движение
+        одного текста через версии — в «Разборе роста» внутри тетради.
       </p>
 
-      <h2>Сверка голоса</h2>
+      <h2>Голос автора</h2>
       <p className="empty-note">
-        Лёгкое зеркало: секретарь смотрит на ваши правки «было ↔ стало» и называет
-        2–3 черты — что уже звучит уверенно, а что ещё колеблется. Выводы делаете вы.
+        Секретарь смотрит не на один текст, а на несколько ваших законченных — и называет,
+        что в голосе уже звучит уверенно, а что ещё колеблется от текста к тексту. Открывается,
+        когда <strong>{AUTHOR_VOICE_MIN_TEXTS} разных текста пройдут полный круг</strong> (Не
+        высушить → две Сверки → Усилить → правка).
       </p>
-      {activeCheck !== undefined ? (
+
+      {active !== undefined ? (
         <div className="pass-list inquiries-list">
-          <PassCard pass={activeCheck} defaultOpen />
+          <PassCard pass={active} defaultOpen />
         </div>
-      ) : pairs.length > 0 ? (
+      ) : eligible ? (
         <div className="lens-block audit-block">
           <p>
-            С последней сверки{lastCheck !== undefined && ` (${lastCheck})`} накопилось
-            правок: {pairs.length}. Секретарь соберёт зеркало из пар «было ↔ стало».
+            Полный круг прошли текстов: {cycled}. Секретарь соберёт портрет голоса по их
+            финальным версиям.
           </p>
-          <form action={startVoiceCheck}>
+          <form action={startAuthorVoice}>
             <button type="submit" className="toolbar-button">
-              Сверить голос
+              Собрать голос автора
             </button>
           </form>
         </div>
       ) : (
         <p className="empty-note">
-          Новых правок с последней сверки{lastCheck !== undefined && ` (${lastCheck})`} нет
-          — сверять нечего.
+          Пока полный круг прошли текстов: {cycled} из {AUTHOR_VOICE_MIN_TEXTS}. Как наберётся{" "}
+          {AUTHOR_VOICE_MIN_TEXTS} — секретарь соберёт портрет голоса.
         </p>
       )}
 
-      {doneChecks.length > 0 && (
+      {done.length > 0 && (
         <>
-          <h2>История сверок</h2>
+          <h2>Прежние портреты</h2>
           <div className="pass-list inquiries-list">
-            {doneChecks.map((pass) => (
+            {done.map((pass) => (
               <PassCard key={pass.id} pass={pass} defaultOpen={false} />
             ))}
           </div>
         </>
       )}
 
-      <h2>Подтверждённые механики</h2>
-      {voiceCore !== undefined ? (
-        <details className="voice-core" open>
-          <summary>Ядро голоса</summary>
-          <pre>{voiceCore}</pre>
+      {oldChecks.length > 0 && (
+        <details className="voice-core">
+          <summary>Прежние сверки голоса</summary>
+          <div className="pass-list inquiries-list">
+            {oldChecks.map((pass) => (
+              <PassCard key={pass.id} pass={pass} defaultOpen={false} />
+            ))}
+          </div>
         </details>
-      ) : (
-        <p className="empty-note">
-          Ядро голоса — портрет подтверждённых механик — собирается из повторов в сверках.
-          Полный аудит, который ведёт это ядро сам, появится в следующей версии.
-        </p>
       )}
     </>
   );

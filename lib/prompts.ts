@@ -387,6 +387,99 @@ export function parseGrowthResponse(raw: string): GrowthReport | undefined {
   return { main, wins, toWork, nextStep };
 }
 
+// --- «Голос автора»: кросс-текстовый разбор голоса поверх корпуса ---
+// docs/ДВА-ПРОЦЕССА.md, Процесс 2. Единица анализа — АВТОР, а не текст: смотрим,
+// что общего в голосе на РАЗНЫХ текстах, что уже звучит уверенно, а что ещё
+// колеблется от текста к тексту. Озвучивает секретарь (не наставник): он не
+// правит и не хвалит даром — он собирает портрет голоса и задаёт направление.
+
+const VOICE_SECRETARY_ROLE = `Вы — внимательный секретарь при столе автора. Железное правило: вы НИКОГДА не
+пишете и не переписываете текст за автора и не даёте готовых формулировок. Ваша
+работа — не разбор отдельного текста, а портрет ГОЛОСА автора поверх нескольких
+её текстов: что в голосе повторяется из текста в текст и уже звучит уверенно, а
+что ещё колеблется — где-то есть, где-то пропадает. Говорите словами и примерами
+из присланных текстов, не оценками и не баллами. Дежурная похвала запрещена.
+Опирайтесь ТОЛЬКО на присланные ниже тексты — ничего из других разговоров,
+памяти или файлов; чего нет в этих строках, того для портрета не существует.`;
+
+export const AUTHOR_VOICE_RESPONSE_CONTRACT = `Ответ верните СТРОГО в формате ниже, без текста вне блока.
+
+===IRINAOS===
+[ГЛАВНОЕ]
+<что за голос складывается поверх этих текстов — одним абзацем, через конкретику ЭТИХ текстов (узнаваемые ходы, интонация, ритм), без дежурных формул>
+[УВЕРЕННО]
+- <черта голоса, которая повторяется и держится в РАЗНЫХ текстах — с примером-цитатой, откуда именно>
+- <ещё черта, если есть>
+[КОЛЕБЛЕТСЯ]
+- <что в голосе непостоянно: в одном тексте звучит, в другом теряется — с конкретикой откуда>
+- <ещё пункт, если есть>
+[СЛЕДУЮЩИЙ ШАГ]
+<один вопрос-направление автору: куда смотреть, чтобы голос окреп (не готовая правка)>
+===КОНЕЦ===`;
+
+export interface AuthorVoicePromptInput {
+  texts: Array<{ title: string; text: string; intention?: string }>;
+}
+
+export function buildAuthorVoicePrompt({ texts }: AuthorVoicePromptInput): string {
+  const textBlocks = texts
+    .map((entry, index) => {
+      const header = `<<<ТЕКСТ ${index + 1}: ${entry.title}>>>`;
+      const intent =
+        entry.intention !== undefined && entry.intention.trim() !== ""
+          ? `\n(намерение автора: ${entry.intention.trim()})`
+          : "";
+      return `${header}${intent}\n${entry.text}\n<<<КОНЕЦ: ТЕКСТ ${index + 1}>>>`;
+    })
+    .join("\n\n");
+
+  return `${VOICE_SECRETARY_ROLE}
+
+Задача — портрет ГОЛОСА автора. Перед вами ${texts.length} её РАЗНЫХ текста,
+каждый доведён до финальной версии. Не разбирайте их по отдельности — смотрите,
+что у них ОБЩЕГО как у голоса одного автора: какие ходы, интонация, ритм
+повторяются и уже звучат уверенно; что колеблется — в одном тексте есть, в
+другом пропадает. Опирайтесь на конкретику: цитата из текста, где это видно.
+Хвалу даром не выдавайте.
+
+Тексты автора (финальные версии):
+${textBlocks}
+
+${AUTHOR_VOICE_RESPONSE_CONTRACT}`;
+}
+
+/**
+ * Парсер «Голоса автора»: секции [ГЛАВНОЕ]/[УВЕРЕННО]/[КОЛЕБЛЕТСЯ]/[СЛЕДУЮЩИЙ ШАГ]
+ * внутри ===IRINAOS===…===КОНЕЦ===. Кладём в тот же GrowthReport: уверенно→wins,
+ * колеблется→toWork (показ переиспользует GrowthReview). undefined при сбое.
+ */
+export function parseAuthorVoiceResponse(raw: string): GrowthReport | undefined {
+  const block = /===IRINAOS===([\s\S]*?)===КОНЕЦ===/u.exec(raw);
+  if (block === null || block[1] === undefined) return undefined;
+
+  const body = block[1];
+  const marker = /\[\s*(ГЛАВНОЕ|УВЕРЕННО|КОЛЕБЛЕТСЯ|СЛЕДУЮЩИЙ ШАГ)\s*\]/gu;
+  const sections = new Map<string, string>();
+  let match = marker.exec(body);
+  if (match === null) return undefined;
+  while (match !== null) {
+    const name = (match[1] ?? "").trim();
+    const start = match.index + match[0].length;
+    const next = marker.exec(body);
+    const end = next === null ? body.length : next.index;
+    if (!sections.has(name)) sections.set(name, body.slice(start, end).trim());
+    match = next;
+  }
+
+  const main = sections.get("ГЛАВНОЕ") ?? "";
+  const wins = bulletLines(sections.get("УВЕРЕННО") ?? "");
+  const toWork = bulletLines(sections.get("КОЛЕБЛЕТСЯ") ?? "");
+  const nextStep = sections.get("СЛЕДУЮЩИЙ ШАГ") ?? "";
+
+  if (main === "" && wins.length === 0 && toWork.length === 0) return undefined;
+  return { main, wins, toWork, nextStep };
+}
+
 /** Плоский parsedResult из разбора роста — чтобы сводка/экспорт продолжали работать. */
 export function growthReportToParsed(report: GrowthReport): Record<string, string> {
   const parts: string[] = [];

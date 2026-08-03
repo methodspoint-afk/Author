@@ -88,6 +88,7 @@ export interface Pass {
   parsedResult?: Record<string, string> | Record<string, string>[];
   axisResult?: AxisAssessment[]; // разбор по осям (только mentor-compass)
   growthResult?: GrowthReport; // разбор роста одного текста (только growth)
+  voiceResult?: GrowthReport; // голос автора: кросс-текстовый разбор (только author-voice)
   completedAt?: string;
   committedPath?: string;
   lastParseFailed?: boolean;
