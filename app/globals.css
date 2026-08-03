@@ -1547,6 +1547,23 @@ a {
   border-bottom: 1px solid var(--accent);
 }
 
+/* Тихая строка-обещание в «Как это работает»: движение видно со временем */
+.landing-promise {
+  margin: 0.9rem 0 0;
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+.landing-promise a {
+  font-style: normal;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.landing-promise a:hover {
+  border-bottom-color: var(--accent);
+}
+
 /* «С чего начать» — квик-старт */
 .start-page {
   max-width: 46rem;
