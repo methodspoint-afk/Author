@@ -1,12 +1,14 @@
 import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import SecretaryNote from "../../components/SecretaryNote";
-import { RHYTHM_LINES, pickLine } from "../../lib/secretaryLines";
+import { RHYTHM_LINES, VOICE_NEAR_LINES, pickLine } from "../../lib/secretaryLines";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { findPassToClose } from "../../lib/iteration";
+import { authorVoiceNear } from "../../lib/nudges";
 import { workRhythm } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
 import type { FragmentVersion } from "../../lib/types";
+import { AUTHOR_VOICE_MIN_TEXTS, fullyCycledNotebooks } from "../../lib/voice";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,9 @@ export default async function DeskPage() {
     readCollection<FragmentVersion>("fragment-versions.json"),
   ]);
   const rhythm = workRhythm(versions);
+  // Момент близости «Голоса автора» (Q6): в приоритете над ритмом — один голос за раз.
+  const voiceNear = authorVoiceNear(notebooks, passes);
+  const cycledCount = fullyCycledNotebooks(notebooks, passes).length;
 
   const passById = new Map(passes.map((pass) => [pass.id, pass]));
   // Тетради из одних изысканий, сверок и «Голоса автора» живут в Кабинете, не на Столе.
@@ -52,12 +57,21 @@ export default async function DeskPage() {
         которым хотите поработать. Или откройте в подборке свой текст, к которому хотите
         вернуться.
       </p>
-      {rhythm.due && (
-        <SecretaryNote id={`rhythm-${rhythm.windowDays}-${rhythm.count}`}>
-          {pickLine(RHYTHM_LINES, `${rhythm.windowDays}-${rhythm.count}`)
-            .replace("{days}", `${rhythm.windowDays} ${plural(rhythm.windowDays, "день", "дня", "дней")}`)
-            .replace("{count}", `${rhythm.count} ${plural(rhythm.count, "правка", "правки", "правок")}`)}
+      {voiceNear ? (
+        <SecretaryNote id={`voice-near-${cycledCount}`}>
+          {pickLine(VOICE_NEAR_LINES, `voice-${cycledCount}`)
+            .replace("{done}", String(cycledCount))
+            .replace("{total}", String(AUTHOR_VOICE_MIN_TEXTS))}{" "}
+          <Link href="/study/voice">Голос автора →</Link>
         </SecretaryNote>
+      ) : (
+        rhythm.due && (
+          <SecretaryNote id={`rhythm-${rhythm.windowDays}-${rhythm.count}`}>
+            {pickLine(RHYTHM_LINES, `${rhythm.windowDays}-${rhythm.count}`)
+              .replace("{days}", `${rhythm.windowDays} ${plural(rhythm.windowDays, "день", "дня", "дней")}`)
+              .replace("{count}", `${rhythm.count} ${plural(rhythm.count, "правка", "правки", "правок")}`)}
+          </SecretaryNote>
+        )
       )}
       <div className="notebook-toolbar">
         <NewNotebookForm />

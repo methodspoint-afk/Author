@@ -11,8 +11,15 @@ import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
 import { growthEligible } from "../../../lib/growth";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
+import { cycleMissingStep, growthNear } from "../../../lib/nudges";
 import { daysSince } from "../../../lib/rituals";
-import { RETURN_OPENERS, pickLine } from "../../../lib/secretaryLines";
+import {
+  CYCLE_DRYOUT_LINES,
+  CYCLE_STRENGTHEN_LINES,
+  GROWTH_NEAR_LINES,
+  RETURN_OPENERS,
+  pickLine,
+} from "../../../lib/secretaryLines";
 import { readCollection } from "../../../lib/storage";
 import type { FragmentVersion } from "../../../lib/types";
 import { commitToCorpus, createDigest, createGrowthPass, reopenNotebook, shelveNotebook } from "../actions";
@@ -44,6 +51,10 @@ export default async function NotebookPage({
 
   // Приветствие при возврате к давней тетради: где остановились и что дальше.
   const away = daysSince(notebook.updatedAt);
+  // Момент близости (Q6): уступает приветствию возврата — один голос за раз.
+  const returnDue = away >= 3;
+  const missingStep = cycleMissingStep(notebook, passes);
+  const nearGrowth = growthNear(notebook, passes);
   const lastVersion = versions[versions.length - 1];
   const nextStep = law.allowed
     ? "Сейчас можно взять новую линзу — или забрать текст, когда он готов."
@@ -60,6 +71,21 @@ export default async function NotebookPage({
           )}{" "}
           {lastVersion?.note !== undefined && `В прошлый раз вы отметили: «${lastVersion.note}». `}
           {nextStep}
+        </SecretaryNote>
+      )}
+      {!returnDue && missingStep === "strengthen" && (
+        <SecretaryNote id={`cycle-str-${notebook.id}`}>
+          {pickLine(CYCLE_STRENGTHEN_LINES, notebook.id)}
+        </SecretaryNote>
+      )}
+      {!returnDue && missingStep === "dry-out" && (
+        <SecretaryNote id={`cycle-dry-${notebook.id}`}>
+          {pickLine(CYCLE_DRYOUT_LINES, notebook.id)}
+        </SecretaryNote>
+      )}
+      {!returnDue && missingStep === null && nearGrowth && (
+        <SecretaryNote id={`grow-near-${notebook.id}`}>
+          {pickLine(GROWTH_NEAR_LINES, notebook.id)}
         </SecretaryNote>
       )}
       {/* Главное — линзы (в тетради справа). Вспомогательное убрано под «Ещё…»,
