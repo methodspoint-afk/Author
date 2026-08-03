@@ -11,13 +11,22 @@ describe("глоссарий — единый источник", () => {
     expect(lookupGloss("компас")).toBeUndefined();
   });
 
-  it("«Как растёт ваш голос» опирается на оси и на базу (сколько сверок)", () => {
-    // По решению автора подход измерения по осям сохранён и вынесен наружу
-    // (осевой разбор + осевая дельта), поэтому слово «оси» здесь уместно.
-    const g = lookupGloss("Как растёт ваш голос");
-    expect(g).toBeDefined();
-    expect(g!.toLowerCase()).toContain("осям");
-    expect(g!.toLowerCase()).toContain("сверк");
+  it("«Голос автора» — про корпус, «Разбор роста» — про один текст", () => {
+    // Единица анализа (docs/ДВА-ПРОЦЕССА.md): голос поверх текстов ↔ один текст.
+    const voice = lookupGloss("Голос автора");
+    expect(voice).toBeDefined();
+    expect(voice!.toLowerCase()).toContain("текст");
+    expect(voice!).toContain("Разбор роста");
+
+    const growth = lookupGloss("Разбор роста");
+    expect(growth).toBeDefined();
+    expect(growth!.toLowerCase()).toContain("версии");
+    expect(growth!).toContain("Голос автора");
+  });
+
+  it("убранные термины больше не в глоссарии (одна сущность голоса)", () => {
+    expect(lookupGloss("Как растёт ваш голос")).toBeUndefined();
+    expect(lookupGloss("Сверка голоса")).toBeUndefined();
   });
 
   it("нет пустых пояснений", () => {

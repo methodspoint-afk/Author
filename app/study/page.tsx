@@ -34,7 +34,8 @@ export default async function StudyPage() {
         <Link href="/study/voice" className="study-card">
           <h2><GlossaryTerm term="Голос">Голос</GlossaryTerm></h2>
           <p>
-            Портрет вашего стиля: сверка голоса и подтверждённые механики.
+            Портрет вашего стиля поверх текстов: «Голос автора» — что уже звучит уверенно, а что
+            ещё колеблется.
           </p>
         </Link>
         <Link href="/study/mentors" className="study-card">

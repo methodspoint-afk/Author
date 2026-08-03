@@ -8,6 +8,7 @@ export const PASS_TYPE_LABELS: Record<PassType, string> = {
   strengthen: "Усилить",
   "mentor-compass": "Сверить",
   growth: "Разбор роста",
+  "author-voice": "Голос автора",
   inquiry: "Изыскание",
   digest: "Сводка",
   audit: "Сверка голоса",

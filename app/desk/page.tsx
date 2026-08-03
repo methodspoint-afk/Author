@@ -1,10 +1,10 @@
 import Link from "next/link";
 import NewNotebookForm from "../../components/NewNotebookForm";
 import SecretaryNote from "../../components/SecretaryNote";
-import { RHYTHM_LINES, SVERKA_LINES, pickLine } from "../../lib/secretaryLines";
+import { RHYTHM_LINES, pickLine } from "../../lib/secretaryLines";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 import { findPassToClose } from "../../lib/iteration";
-import { auditReminder, lastVoiceCheckDate, laterDate, readLastAuditDate, workRhythm } from "../../lib/rituals";
+import { workRhythm } from "../../lib/rituals";
 import { readCollection } from "../../lib/storage";
 import type { FragmentVersion } from "../../lib/types";
 
@@ -17,19 +17,16 @@ const dateFormat = new Intl.DateTimeFormat("ru-RU", {
 });
 
 export default async function DeskPage() {
-  const [notebooks, passes, versions, lastAuditDate] = await Promise.all([
+  const [notebooks, passes, versions] = await Promise.all([
     getNotebooks(),
     getAllPasses(),
     readCollection<FragmentVersion>("fragment-versions.json"),
-    readLastAuditDate(),
   ]);
-  const lastCheck = laterDate(lastAuditDate, lastVoiceCheckDate(passes));
-  const reminder = auditReminder(versions, lastCheck);
   const rhythm = workRhythm(versions);
 
   const passById = new Map(passes.map((pass) => [pass.id, pass]));
-  // Тетради, состоящие из одних изысканий и аудитов, живут в Кабинете, не на Столе.
-  const cabinetTypes = new Set(["inquiry", "audit"]);
+  // Тетради из одних изысканий, сверок и «Голоса автора» живут в Кабинете, не на Столе.
+  const cabinetTypes = new Set(["inquiry", "audit", "author-voice"]);
   const isCabinetOnly = (notebook: (typeof notebooks)[number]): boolean =>
     notebook.versionIds.length === 0 &&
     notebook.passIds.length > 0 &&
@@ -55,22 +52,12 @@ export default async function DeskPage() {
         которым хотите поработать. Или откройте в подборке свой текст, к которому хотите
         вернуться.
       </p>
-      {reminder.due ? (
-        <SecretaryNote id={`audit-${lastCheck ?? "none"}-${reminder.count}`}>
-          {pickLine(SVERKA_LINES, `${lastCheck ?? "none"}-${reminder.count}`).replace(
-            "{count}",
-            `${reminder.count} ${plural(reminder.count, "правка", "правки", "правок")}`,
-          )}{" "}
-          <Link href="/study/voice">Сверить голос →</Link>
+      {rhythm.due && (
+        <SecretaryNote id={`rhythm-${rhythm.windowDays}-${rhythm.count}`}>
+          {pickLine(RHYTHM_LINES, `${rhythm.windowDays}-${rhythm.count}`)
+            .replace("{days}", `${rhythm.windowDays} ${plural(rhythm.windowDays, "день", "дня", "дней")}`)
+            .replace("{count}", `${rhythm.count} ${plural(rhythm.count, "правка", "правки", "правок")}`)}
         </SecretaryNote>
-      ) : (
-        rhythm.due && (
-          <SecretaryNote id={`rhythm-${rhythm.windowDays}-${rhythm.count}`}>
-            {pickLine(RHYTHM_LINES, `${rhythm.windowDays}-${rhythm.count}`)
-              .replace("{days}", `${rhythm.windowDays} ${plural(rhythm.windowDays, "день", "дня", "дней")}`)
-              .replace("{count}", `${rhythm.count} ${plural(rhythm.count, "правка", "правки", "правок")}`)}
-          </SecretaryNote>
-        )
       )}
       <div className="notebook-toolbar">
         <NewNotebookForm />

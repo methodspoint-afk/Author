@@ -4,7 +4,8 @@ export type PassType =
   | "dry-out" // Не высушивать: за счёт чего фрагмент живёт
   | "strengthen" // Усилить: слабые места
   | "mentor-compass" // Проход по компасу (13 наставников)
-  | "growth" // Разбор роста: движение одного текста через версии (один наставник, ≥2 сверки)
+  | "growth" // Разбор роста: движение одного текста через версии (≥2 сверки)
+  | "author-voice" // Голос автора: разбор голоса по ≥3 текстам, прошедшим полный цикл
   | "inquiry" // Изыскания
   | "digest" // Сводка
   | "audit" // Аудит корпуса (LEARNING-LOOP)
@@ -87,6 +88,7 @@ export interface Pass {
   parsedResult?: Record<string, string> | Record<string, string>[];
   axisResult?: AxisAssessment[]; // разбор по осям (только mentor-compass)
   growthResult?: GrowthReport; // разбор роста одного текста (только growth)
+  voiceResult?: GrowthReport; // голос автора: кросс-текстовый разбор (только author-voice)
   completedAt?: string;
   committedPath?: string;
   lastParseFailed?: boolean;
