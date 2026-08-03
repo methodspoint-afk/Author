@@ -1,6 +1,5 @@
 import Link from "next/link";
 import GlossaryTerm from "../../components/GlossaryTerm";
-import { allMentorGrowth } from "../../lib/axisDelta";
 import { ACTIVE_COMPASS_IDS, COMPASSES } from "../../lib/compasses";
 import { getAllPasses, getNotebooks } from "../../lib/data";
 
@@ -8,7 +7,6 @@ export const dynamic = "force-dynamic";
 
 export default async function StudyPage() {
   const [notebooks, passes] = await Promise.all([getNotebooks(), getAllPasses()]);
-  const measuredMentors = allMentorGrowth(passes).length;
 
   const committed = notebooks.filter((notebook) => notebook.committedPath !== undefined).length;
   const inquiries = passes.filter((pass) => pass.type === "inquiry");
@@ -42,8 +40,8 @@ export default async function StudyPage() {
         <Link href="/study/mentors" className="study-card">
           <h2><GlossaryTerm term="Наставник">Карта наставников</GlossaryTerm></h2>
           <p>
-            В деле {ACTIVE_COMPASS_IDS.length} из {COMPASSES.length} наставников; с замерами
-            роста: {measuredMentors}. Как растёт голос — по следам сверок.
+            В деле {ACTIVE_COMPASS_IDS.length} из {COMPASSES.length} наставников. Карта тех, чьими
+            глазами можно посмотреть на текст под линзой «Сверить».
           </p>
         </Link>
         <Link href="/study/shelf" className="study-card">
