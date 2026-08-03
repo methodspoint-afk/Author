@@ -500,6 +500,32 @@ a {
   font-style: italic;
 }
 
+/* «Следующий шаг» в разборе роста — вопрос-направление, петролевой контур. */
+.growth-next {
+  margin-top: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+}
+.growth-next-tag {
+  display: inline-block;
+  font-family: var(--btn);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+  padding: 0.15rem 0.55rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  margin-bottom: 0.45rem;
+}
+.growth-next p {
+  margin: 0;
+  color: var(--ink);
+  font-style: italic;
+}
+
 /* «Что уже работает» — тихий разделитель перед сильными сторонами. */
 .axis-subhead {
   margin: 1.1rem 0 0.2rem;

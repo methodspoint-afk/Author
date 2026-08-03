@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { collectAuditPairs } from "../../lib/audit";
 import { getCompass } from "../../lib/compasses";
+import { growthChain } from "../../lib/growth";
 import { checkIterationLaw, findPassToClose } from "../../lib/iteration";
 import { buildNewNotebook, cleanTitle, removeNotebook, removePass } from "../../lib/notebook";
 import { lastVoiceCheckDate, laterDate, readLastAuditDate } from "../../lib/rituals";
@@ -14,8 +15,11 @@ import {
   axisResultToParsed,
   buildCompassPrompt,
   buildDryOutPrompt,
+  buildGrowthPrompt,
   buildStrengthenPrompt,
+  growthReportToParsed,
   parseCompassResponse,
+  parseGrowthResponse,
   parsePromptResponse,
 } from "../../lib/prompts";
 import { readCollection, writeCollection } from "../../lib/storage";
@@ -285,6 +289,7 @@ export async function submitPassResponse(
   // parsedResult синтезируем, чтобы сводка и изыскания продолжали работать.
   let parsed: Record<string, string> | undefined;
   let axisResult: Pass["axisResult"];
+  let growthResult: Pass["growthResult"];
   if (pass.type === "mentor-compass" && pass.compassId !== undefined) {
     const compass = getCompass(pass.compassId);
     const axisParsed =
@@ -292,6 +297,12 @@ export async function submitPassResponse(
     if (axisParsed !== undefined) {
       axisResult = axisParsed.axes;
       parsed = axisResultToParsed(axisParsed);
+    }
+  } else if (pass.type === "growth") {
+    const report = parseGrowthResponse(raw);
+    if (report !== undefined) {
+      growthResult = report;
+      parsed = growthReportToParsed(report);
     }
   } else {
     parsed = parsePromptResponse(raw);
@@ -309,6 +320,7 @@ export async function submitPassResponse(
 
   pass.parsedResult = parsed;
   if (axisResult !== undefined) pass.axisResult = axisResult;
+  if (growthResult !== undefined) pass.growthResult = growthResult;
   pass.status = "completed";
   pass.completedAt = new Date().toISOString();
   pass.lastParseFailed = false;
@@ -535,6 +547,58 @@ export async function createDigest(
   await writeCollection("notebooks.json", notebooks);
   refresh(notebookId);
   return { ok: true, message: "Сводка готова — она ниже, среди разборов." };
+}
+
+/**
+ * «Разбор роста» (Процесс 1, docs/ДВА-ПРОЦЕССА.md): движение одного текста через
+ * версии. Собирает цепочку (версии + советы наставников по пути + «что берегли»)
+ * и депешу. Доступен при ≥2 сверках. Один черновик за раз.
+ */
+export async function createGrowthPass(
+  _prev: ToolbarResult | undefined,
+  formData: FormData,
+): Promise<ToolbarResult> {
+  const notebookId = String(formData.get("notebookId") ?? "");
+  const { notebooks, passes, versions } = await loadAll();
+  const notebook = notebooks.find((entry) => entry.id === notebookId);
+  if (notebook === undefined) return { ok: false, message: "Тетрадь не найдена." };
+
+  const openGrowth = passes.some(
+    (pass) => pass.type === "growth" && pass.notebookId === notebookId && pass.status !== "completed",
+  );
+  if (openGrowth) {
+    return { ok: false, message: "Черновик разбора роста уже есть — завершите его или удалите." };
+  }
+
+  const notebookVersions = notebook.versionIds
+    .map((id) => versions.find((version) => version.id === id))
+    .filter((version): version is FragmentVersion => version !== undefined);
+
+  const chain = growthChain(notebook, notebookVersions, passes);
+  if (chain === undefined) {
+    return { ok: false, message: "Нужно хотя бы две сверки в этой тетради." };
+  }
+
+  const pass: Pass = {
+    id: randomUUID(),
+    type: "growth",
+    label: "Разбор роста",
+    notebookId,
+    promptText: buildGrowthPrompt({
+      versions: chain.versions,
+      advice: chain.advice,
+      ...(chain.protect !== undefined && { protect: chain.protect }),
+    }),
+    status: "draft",
+  };
+  passes.push(pass);
+  notebook.passIds.push(pass.id);
+  notebook.updatedAt = new Date().toISOString();
+
+  await writeCollection("passes.json", passes);
+  await writeCollection("notebooks.json", notebooks);
+  refresh(notebookId);
+  return { ok: true, message: "Разбор роста готов — депеша ниже, среди разборов." };
 }
 
 /** Внести тетрадь в картотеку: markdown-кейс в learning/corpus/. */

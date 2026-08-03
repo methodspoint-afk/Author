@@ -9,12 +9,13 @@ import SecretaryNote from "../../../components/SecretaryNote";
 import ToolbarActionButton from "../../../components/ToolbarActionButton";
 import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
+import { growthEligible } from "../../../lib/growth";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
 import { daysSince } from "../../../lib/rituals";
 import { RETURN_OPENERS, pickLine } from "../../../lib/secretaryLines";
 import { readCollection } from "../../../lib/storage";
 import type { FragmentVersion } from "../../../lib/types";
-import { commitToCorpus, createDigest, reopenNotebook, shelveNotebook } from "../actions";
+import { commitToCorpus, createDigest, createGrowthPass, reopenNotebook, shelveNotebook } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,8 @@ export default async function NotebookPage({
   const completedLensCount = passes.filter(
     (pass) => isLensPass(pass.type) && pass.status === "completed",
   ).length;
+  // «Разбор роста» (Процесс 1): доступен при ≥2 сверках в этой тетради.
+  const canGrowth = growthEligible(notebook, passes);
 
   // Приветствие при возврате к давней тетради: где остановились и что дальше.
   const away = daysSince(notebook.updatedAt);
@@ -137,6 +140,19 @@ export default async function NotebookPage({
                 pendingLabel="Собираю сводку…"
               />
               <p className="pane-hint">Свести все разборы этой тетради в один общий итог.</p>
+            </div>
+          )}
+          {canGrowth && (
+            <div className="digest-offer">
+              <ToolbarActionButton
+                action={createGrowthPass}
+                notebookId={notebook.id}
+                label="Разбор роста"
+                pendingLabel="Собираю разбор роста…"
+              />
+              <p className="pane-hint">
+                Посмотреть, как этот текст двигался через версии: что окрепло, над чем поработать.
+              </p>
             </div>
           )}
           <h2>
