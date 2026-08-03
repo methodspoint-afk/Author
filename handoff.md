@@ -4,35 +4,33 @@
 
 ## В РАБОТЕ
 
-- **Задача:** «Разбор роста» — новый разбор (по просьбе автора). Один текст +
-  один наставник + ≥2 сверки → наставник смотрит цепочку версий (v4→v5→v6) и
-  показывает ДВИЖЕНИЕ голоса: по каждой оси окрепло/без изменений/просело, на
-  какой правке, за счёт чего (было→стало), где не двинулось + куда расти. В
-  отличие от «Как растёт голос» (снимок по всем текстам одного наставника) —
-  это траектория ОДНОГО текста через правки автора.
-- **Шаг 1 (движок) — ГОТОВО, в main:** lib/growth.ts (`growthChain`,
-  `eligibleGrowthMentors`), lib/prompts.ts (`buildGrowthPrompt`,
-  `parseGrowthResponse`, `GROWTH_RESPONSE_CONTRACT`), типы (AxisMovement,
-  GrowthAxis, Pass.growthResult/growthCompassId, PassType "growth"),
-  passMeta "growth"→«Разбор роста», tests/growth.test.ts (+6). Инертно.
-- **Спека двух процессов — ЗАФИКСИРОВАНА:** docs/ДВА-ПРОЦЕССА.md (источник
-  правды). Единица анализа: текст vs автор. Все 6 вопросов согласованы автором.
-- **Движок «Разбор роста» ПЕРЕСОБРАН под Q1 (нарратив, мульти-наставник):**
-  осевой вариант заменён. lib/growth.ts (`growthChain` собирает версии + советы
-  наставников по пути + «что берегли» из «Не высушить»; `growthEligible` = ≥2
-  сверки любых наставников), lib/prompts.ts (`buildGrowthPrompt` нарративный,
-  `parseGrowthResponse` → `GrowthReport {main, wins[], toWork[], nextStep}`),
-  типы (GrowthReport вместо осевого GrowthAxis). 107 тестов. Инертно.
-- **Шаг 2 — UI «Разбор роста» — ГОТОВО, в main:** `createGrowthPass`
-  (ToolbarResult, growthChain → buildGrowthPrompt → Pass "growth", защита от
-  дубля черновика), ветка growth в submitPassResponse (→ growthResult +
-  growthReportToParsed), кнопка-оффер в тетради (видна при growthEligible),
-  GrowthReview в PassCard (Главное · Окрепло · Над чем поработать · Следующий
-  шаг), CSS .growth-next. Решение «Не высушить = рекомендация, не шлагбаум»
-  внесено в спеку. 107 тестов, живой скрин — зелёные.
-- **Шаг 3 (следующий):** «Голос автора» (Процесс 2): детект «полного цикла»
-  (Не высушить + ≥2 Сверить + Усилить), гейт ≥3 текста; убрать старую панель
-  «Как растёт голос» (lib/axisDelta.ts + раздел на /study/mentors).
+- **Задача (Шаг 3b, PR B):** «Голос автора» (Процесс 2, docs/ДВА-ПРОЦЕССА.md) —
+  кросс-текстовый разбор голоса поверх корпуса. Единица анализа — АВТОР.
+  Гейт входа: **≥3 РАЗНЫХ текста, прошедших полный цикл** (Не высушить ≥1 +
+  Сверить ≥2 + Усилить ≥1). По решению автора «одна сущность»: «Голос автора»
+  становится единственной голосовой сущностью в Кабинете → убираем «Сверку
+  голоса» из UI (панель на /study/voice заменяем; старую «Как растёт голос»
+  уже убрали в PR A/#55).
+- **Шаг 3a — ГОТОВО, в main (#55):** убрана «Как растёт голос» — удалены
+  lib/axisDelta.ts + tests/axis-delta.test.ts, раздел на /study/mentors,
+  карточка Кабинета поправлена. 103 теста.
+- **План PR B (текущий):**
+  - `lib/voice.ts` — `textCompletedCycle`, `fullyCycledNotebooks`,
+    `authorVoiceEligible` (≥3), `authorVoiceInput`; `AUTHOR_VOICE_MIN_TEXTS`.
+  - `lib/prompts.ts` — `SECRETARY_ROLE`, `buildAuthorVoicePrompt`,
+    `AUTHOR_VOICE_RESPONSE_CONTRACT`, `parseAuthorVoiceResponse` (секции
+    [ГЛАВНОЕ]/[УВЕРЕННО]/[КОЛЕБЛЕТСЯ]/[СЛЕДУЮЩИЙ ШАГ] → GrowthReport).
+  - типы: `Pass.voiceResult?: GrowthReport`, PassType `author-voice` (есть);
+    passMeta `author-voice`→«Голос автора».
+  - `app/desk/actions.ts` — `startAuthorVoice` (кабинетная тетрадь `voice-…`,
+    защита от дубля) + ветка author-voice в `submitPassResponse`.
+  - `components/PassCard.tsx` — показ `voiceResult` через GrowthReview.
+  - `app/study/voice/page.tsx` — заменить «Сверку голоса» на «Голос автора».
+  - `app/desk/page.tsx` — убрать напоминание аудита (цель ушла); добавить
+    `author-voice` в кабинетные типы; `app/study/page.tsx` — текст карточки.
+  - `docs/СЛОВАРЬ.md` — термин «Голос автора»; `tests/voice.test.ts`.
+  - **Критерий готовности:** tsc/vitest/build зелёные, живой скрин
+    /study/voice показывает «Голос автора», гейт ≥3 работает.
 - **Шаг 4:** онбординг (Q5: тихая строка на входе + блок на /start) + Азбука
   (термины «Разбор роста», «Голос автора»); **Шаг 5:** напоминалки (Q6).
 
