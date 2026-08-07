@@ -40,3 +40,41 @@ export function cycleMissingStep(notebook: Notebook, passes: Pass[]): CycleMissi
 export function authorVoiceNear(notebooks: Notebook[], passes: Pass[]): boolean {
   return fullyCycledNotebooks(notebooks, passes).length === AUTHOR_VOICE_MIN_TEXTS - 1;
 }
+
+// --- Тихий прогресс (Q6, второй слой): счётчики к порогам ---
+
+/** Прогресс к «Разбору роста»: сколько сверок из нужных двух завершено. */
+export function growthProgress(
+  notebook: Notebook,
+  passes: Pass[],
+): { checks: number; target: number } {
+  return {
+    checks: countCompleted(notebook, passes, "mentor-compass"),
+    target: GROWTH_MIN_CHECKS,
+  };
+}
+
+export interface CycleProgress {
+  dryOut: number; // завершённые «Не высушить»
+  checks: number; // завершённые «Сверить»
+  strengthen: number; // завершённые «Усилить»
+  done: number; // сколько из трёх требований цикла выполнено
+  complete: boolean; // полный цикл (Не высушить ≥1, Сверить ≥2, Усилить ≥1)
+}
+
+/** Раскладка полного цикла текста по трём линзам — для тихого прогресса в тетради. */
+export function cycleProgress(notebook: Notebook, passes: Pass[]): CycleProgress {
+  const dryOut = countCompleted(notebook, passes, "dry-out");
+  const checks = countCompleted(notebook, passes, "mentor-compass");
+  const strengthen = countCompleted(notebook, passes, "strengthen");
+  const dOk = dryOut >= 1;
+  const cOk = checks >= 2;
+  const sOk = strengthen >= 1;
+  return {
+    dryOut,
+    checks,
+    strengthen,
+    done: [dOk, cOk, sOk].filter(Boolean).length,
+    complete: dOk && cOk && sOk,
+  };
+}
