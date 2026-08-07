@@ -5,13 +5,14 @@ import NewPassForm from "../../../components/NewPassForm";
 import GlossaryTerm from "../../../components/GlossaryTerm";
 import NotebookControls from "../../../components/NotebookControls";
 import PassCard from "../../../components/PassCard";
+import ProgressDots from "../../../components/ProgressDots";
 import SecretaryNote from "../../../components/SecretaryNote";
 import ToolbarActionButton from "../../../components/ToolbarActionButton";
 import { ACTIVE_COMPASSES } from "../../../lib/compasses";
 import { getAllPasses, getNotebook, getNotebookPasses, getNotebookVersions } from "../../../lib/data";
 import { growthEligible } from "../../../lib/growth";
 import { checkIterationLaw, isLensPass } from "../../../lib/iteration";
-import { cycleMissingStep, growthNear } from "../../../lib/nudges";
+import { cycleMissingStep, cycleProgress, growthNear, growthProgress } from "../../../lib/nudges";
 import { daysSince } from "../../../lib/rituals";
 import {
   CYCLE_DRYOUT_LINES,
@@ -48,6 +49,9 @@ export default async function NotebookPage({
   ).length;
   // «Разбор роста» (Процесс 1): доступен при ≥2 сверках в этой тетради.
   const canGrowth = growthEligible(notebook, passes);
+  // Тихий прогресс (Q6, второй слой): к «Разбору роста» и по полному кругу.
+  const growthProg = growthProgress(notebook, passes);
+  const cycleProg = cycleProgress(notebook, passes);
 
   // Приветствие при возврате к давней тетради: где остановились и что дальше.
   const away = daysSince(notebook.updatedAt);
@@ -157,6 +161,33 @@ export default async function NotebookPage({
             allowed={law.allowed}
             {...(law.reason !== undefined && { reason: law.reason })}
           />
+          {cycleProg.done >= 1 && !cycleProg.complete && (
+            <div className="cycle-progress" aria-label="прогресс полного круга">
+              <span className="cycle-progress-title">Полный круг:</span>
+              <span className="cycle-step" data-done={cycleProg.dryOut >= 1}>
+                Не высушить <ProgressDots filled={Math.min(cycleProg.dryOut, 1)} total={1} />
+              </span>
+              <span className="cycle-step" data-done={cycleProg.checks >= 2}>
+                Сверить <ProgressDots filled={Math.min(cycleProg.checks, 2)} total={2} />
+              </span>
+              <span className="cycle-step" data-done={cycleProg.strengthen >= 1}>
+                Усилить <ProgressDots filled={Math.min(cycleProg.strengthen, 1)} total={1} />
+              </span>
+            </div>
+          )}
+          {!canGrowth && growthProg.checks >= 1 && (
+            <p className="progress-line">
+              <ProgressDots
+                filled={Math.min(growthProg.checks, growthProg.target)}
+                total={growthProg.target}
+                label={`к «Разбору роста»: ${growthProg.checks} из ${growthProg.target} сверок`}
+              />
+              <span>
+                К «Разбору роста»: {Math.min(growthProg.checks, growthProg.target)} из{" "}
+                {growthProg.target} сверок
+              </span>
+            </p>
+          )}
           {completedLensCount >= 2 && (
             <div className="digest-offer">
               <ToolbarActionButton

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import GlossaryTerm from "../../components/GlossaryTerm";
+import ProgressDots from "../../components/ProgressDots";
 import { ACTIVE_COMPASS_IDS, COMPASSES } from "../../lib/compasses";
 import { getAllPasses, getNotebooks } from "../../lib/data";
+import { AUTHOR_VOICE_MIN_TEXTS, fullyCycledNotebooks } from "../../lib/voice";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,8 @@ export default async function StudyPage() {
   const inquiries = passes.filter((pass) => pass.type === "inquiry");
   const waitingInquiries = inquiries.filter((pass) => pass.status !== "completed").length;
   const shelved = notebooks.filter((notebook) => notebook.shelvedAt !== undefined).length;
+  // Тихий прогресс «Голоса автора»: сколько текстов прошли полный круг (из ≥3).
+  const voiceCycled = fullyCycledNotebooks(notebooks, passes).length;
 
   return (
     <>
@@ -37,6 +41,16 @@ export default async function StudyPage() {
             Портрет вашего стиля поверх текстов: «Голос автора» — что уже звучит уверенно, а что
             ещё колеблется.
           </p>
+          {voiceCycled >= 1 && (
+            <p className="progress-line">
+              <ProgressDots
+                filled={Math.min(voiceCycled, AUTHOR_VOICE_MIN_TEXTS)}
+                total={AUTHOR_VOICE_MIN_TEXTS}
+                label={`полный круг прошли: ${voiceCycled} из ${AUTHOR_VOICE_MIN_TEXTS}`}
+              />
+              <span>{Math.min(voiceCycled, AUTHOR_VOICE_MIN_TEXTS)} из {AUTHOR_VOICE_MIN_TEXTS}</span>
+            </p>
+          )}
         </Link>
         <Link href="/study/mentors" className="study-card">
           <h2><GlossaryTerm term="Наставник">Карта наставников</GlossaryTerm></h2>

@@ -1188,6 +1188,59 @@ a {
   margin: 0;
 }
 
+/* Тихий прогресс (Q6, второй слой): точки к порогу — общий язык с наставниками */
+.progress-dots {
+  display: inline-flex;
+  gap: 0.28rem;
+  vertical-align: middle;
+}
+.progress-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: transparent;
+}
+.progress-dot[data-filled="true"] {
+  background: var(--accent);
+}
+
+/* Строка тихого прогресса у раздела: точки + короткая подпись */
+.progress-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Раскладка полного цикла текста по трём линзам (тетрадь) */
+.cycle-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+.cycle-progress-title {
+  font-family: var(--btn);
+  letter-spacing: 0.02em;
+}
+.cycle-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.cycle-step[data-done="true"] {
+  color: var(--ink);
+}
+
 /* Будущие наставники — компактный подвал */
 /* Дельты наставников — «как двигается голос» (переехали с «Голоса») */
 .mentor-deltas {

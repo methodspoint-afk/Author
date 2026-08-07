@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PassCard from "../../../components/PassCard";
+import ProgressDots from "../../../components/ProgressDots";
 import { getAllPasses, getNotebooks } from "../../../lib/data";
 import { AUTHOR_VOICE_MIN_TEXTS, fullyCycledNotebooks } from "../../../lib/voice";
 import { startAuthorVoice } from "../../desk/actions";
@@ -43,16 +44,27 @@ export default async function VoicePage() {
         высушить → две Сверки → Усилить → правка).
       </p>
 
+      {cycled >= 1 && (
+        <p className="progress-line">
+          <ProgressDots
+            filled={Math.min(cycled, AUTHOR_VOICE_MIN_TEXTS)}
+            total={AUTHOR_VOICE_MIN_TEXTS}
+            label={`полный круг прошли: ${cycled} из ${AUTHOR_VOICE_MIN_TEXTS}`}
+          />
+          <span>
+            Полный круг прошли: {Math.min(cycled, AUTHOR_VOICE_MIN_TEXTS)} из{" "}
+            {AUTHOR_VOICE_MIN_TEXTS}
+          </span>
+        </p>
+      )}
+
       {active !== undefined ? (
         <div className="pass-list inquiries-list">
           <PassCard pass={active} defaultOpen />
         </div>
       ) : eligible ? (
         <div className="lens-block audit-block">
-          <p>
-            Полный круг прошли текстов: {cycled}. Секретарь соберёт портрет голоса по их
-            финальным версиям.
-          </p>
+          <p>Секретарь соберёт портрет голоса по финальным версиям этих текстов.</p>
           <form action={startAuthorVoice}>
             <button type="submit" className="toolbar-button">
               Собрать голос автора
@@ -61,8 +73,8 @@ export default async function VoicePage() {
         </div>
       ) : (
         <p className="empty-note">
-          Пока полный круг прошли текстов: {cycled} из {AUTHOR_VOICE_MIN_TEXTS}. Как наберётся{" "}
-          {AUTHOR_VOICE_MIN_TEXTS} — секретарь соберёт портрет голоса.
+          Как {AUTHOR_VOICE_MIN_TEXTS} текста пройдут полный круг — секретарь соберёт портрет
+          голоса. Спешки нет.
         </p>
       )}
 
